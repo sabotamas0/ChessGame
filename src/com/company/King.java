@@ -77,7 +77,33 @@ public class King extends Piece{
                 }
             }
             else {
-
+                if(pLeftOne.isValid(8,8) && pLeftTwo.isValid(8,8)){
+                    PIECETYPE typeOne = b.table.get(pLeftOne.y).get(pLeftOne.x).piece.getType();
+                    PIECETYPE typeTwo = b.table.get(pLeftTwo.y).get(pLeftTwo.x).piece.getType();
+                    boolean oneIsDefault = typeOne.equals(PIECETYPE.DEFAULT);
+                    boolean twoIsDefault = typeTwo.equals(PIECETYPE.DEFAULT);
+                    PIECETYPE typeRook = b.table.get(0).get(0).piece.getType();
+                    boolean typeIsRook = typeRook.equals(PIECETYPE.ROOK);
+                    boolean isRooksFirstStep = b.table.get(0).get(0).piece.isFirstStep();
+                    if(oneIsDefault && twoIsDefault && typeIsRook && isRooksFirstStep){
+                        validSteps.add(pLeftTwo);
+                    }
+                }
+                if(pRightTwo.isValid(8,8) && pRightOne.isValid(8,8)){
+                    PIECETYPE typeOne = b.table.get(pRightOne.y).get(pRightOne.x).piece.getType();
+                    PIECETYPE typeTwo = b.table.get(pRightTwo.y).get(pRightTwo.x).piece.getType();
+                    boolean oneIsDefault = typeOne.equals(PIECETYPE.DEFAULT);
+                    boolean twoIsDefault = typeTwo.equals(PIECETYPE.DEFAULT);
+                    PIECETYPE typeRook = b.table.get(7).get(0).piece.getType();
+                    boolean typeIsRook = typeRook.equals(PIECETYPE.ROOK);
+                    boolean isRooksFirstStep = b.table.get(7).get(0).piece.isFirstStep();
+                    if(oneIsDefault && twoIsDefault && typeIsRook && isRooksFirstStep){
+                        //b.table.get(pRightTwo.y).get(pRightTwo.x).button.getGraphics().setColor(Color.green);
+                        //b.table.get(pRightTwo.y).get(pRightTwo.x).button.getGraphics().fillOval(0, 0, 25, 25);
+                        b.table.get(pRightTwo.y).get(pRightTwo.x).button.setBorder(new LineBorder(Color.CYAN));
+                        validSteps.add(pRightTwo);
+                    }
+                }
             }
         }
 
@@ -101,6 +127,12 @@ public class King extends Piece{
             }
             else if(isFirstStep && p.x==6 && p.y==7){
                 b.table.get(7).get(7).piece.step(b,new Position(5,7));
+            }
+            else if(isFirstStep && p.x==2 && p.y==0){
+                b.table.get(0).get(0).piece.step(b,new Position(3,0));
+            }
+            else if(isFirstStep && p.x==6 && p.y==0){
+                b.table.get(0).get(7).piece.step(b,new Position(5,0));
             }
             else{
                 b.whiteTurn=!b.whiteTurn;
