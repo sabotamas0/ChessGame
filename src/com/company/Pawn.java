@@ -1,12 +1,14 @@
 package com.company;
 import com.company.Piece;
-
+import com.company.Queen;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.*;
 
 public class Pawn extends Piece{
     boolean isFirstStepTwoStep;
+    Board b;
     public Pawn(Color c){
         if(c.equals(Color.white)) {
             picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whitePawn.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
@@ -17,6 +19,83 @@ public class Pawn extends Piece{
         isFirstStep=true;
         type=PIECETYPE.PAWN;
         color=c;
+    }
+    ImageIcon i = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteQueen.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
+    //paraszt beér akkor lecserélni
+    void promotePawn(Position po,Board b){
+        //beer a paraszt
+        //menu felugrik
+        //menun egy grid kialakitas lesz
+        //griden a tisztek
+        //egy griden levo gombra kattintok
+        //kivalasztodik egy tiszt
+        //paraszt lecserelotisztre
+        JPanel p=new JPanel();
+        p.setLayout(new GridLayout(2,2));
+        p.setSize(50,50);
+        JButton queen=new JButton(new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteQueen.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
+        JButton bishop=new JButton(new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteBishop.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
+        JButton rook=new JButton(new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
+        JButton knight=new JButton(new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteKnight.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
+        p.add(queen);
+        p.add(bishop);
+        p.add(rook);
+        p.add(knight);
+        p.setVisible(true);
+        JFrame f=new JFrame();
+        f.add(p);
+        f.setSize(200,200);
+        f.setVisible(true);
+        f.setContentPane(p);
+        queen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(e.getSource().equals(queen)){
+                    Queen queen=new Queen(Color.white);
+                    queen.pos=po;
+                    b.table.get(po.y).get(po.x).button.setIcon(queen.picture);
+                    b.table.get(po.y).get(po.x).piece=queen;
+                    f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+                }
+            }
+        });
+        bishop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(e.getSource().equals(bishop)){
+                    Bishop bishop=new Bishop(Color.white);
+                    bishop.pos=po;
+                    b.table.get(po.y).get(po.x).button.setIcon(bishop.picture);
+                    b.table.get(po.y).get(po.x).piece=bishop;
+                    f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+                }
+            }
+        });
+        rook.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(e.getSource().equals(rook)){
+                    Rook rook=new Rook(Color.white);
+                    rook.pos=po;
+                    b.table.get(po.y).get(po.x).button.setIcon(rook.picture);
+                    b.table.get(po.y).get(po.x).piece=rook;
+                    f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+                }
+            }
+        });
+        knight.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(e.getSource().equals(knight)){
+                    Knight knight=new Knight(Color.white);
+                    knight.pos=po;
+                    b.table.get(po.y).get(po.x).button.setIcon(knight.picture);
+                    b.table.get(po.y).get(po.x).piece=knight;
+                    f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+                }
+            }
+        });
+        //???? ez hogy ugrik fel wtf
     }
     /*
     En passant ütésre akkor van lehetősége a játékosnak,
@@ -123,7 +202,6 @@ public class Pawn extends Piece{
             }
         }
     }
-
     @Override
     public void step(Board b, Position p) {
         if(!(b.whiteTurn && getColor().equals(Color.white) || !b.whiteTurn && getColor().equals(Color.black)))
@@ -137,7 +215,11 @@ public class Pawn extends Piece{
             b.table.get(p.y).get(p.x).button.setIcon(this.picture);
             this.pos=p;
             if(this.getColor().equals(Color.white)){
-                if(this.pos.y==p.y && p.y==4 && isFirstStep){
+                if(p.y==0){
+                    //meghivom a promotePawn-t ha beer
+                    promotePawn(p,b);
+                }
+                if(p.y==4 && isFirstStep){
                     isFirstStepTwoStep=true;
                 }
                 b.table.get(p.y+1).get(p.x).button.setIcon(null);// <-wtf
@@ -162,4 +244,5 @@ public class Pawn extends Piece{
             }
         }
     }
+
 }
