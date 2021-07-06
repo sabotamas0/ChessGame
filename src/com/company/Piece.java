@@ -1,10 +1,6 @@
 package com.company;
-import com.company.Board;
-import com.company.Position;
-import com.company.PieceInterface;
 import javax.swing.*;
 import java.awt.*;
-import java.util.Stack;
 import java.util.Vector;
 
 enum PIECETYPE{PAWN,BISHOP,KNIGHT,ROOK,KING,QUEEN,DEFAULT};
@@ -21,6 +17,7 @@ enum PIECETYPE{PAWN,BISHOP,KNIGHT,ROOK,KING,QUEEN,DEFAULT};
 public class Piece implements PieceInterface {
     Piece(){
         validSteps=new Vector<Position>();
+        checkingPositions=new Vector<Position>();
     }
     //TODO le lehessen kérdezni hogy default e
     @Override
@@ -36,9 +33,17 @@ public class Piece implements PieceInterface {
         return color;
     }
     @Override
-    public void getAvalaibleSteps(Board b){};
+    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize){return new Vector<Position>();}
+
     @Override
-    public void step(Board b,Position p){};
+    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean callIsChecked){return new Vector<Position>();}
+
+    @Override
+    public Vector<Position> getCheckingPositions() {
+        return new Vector<Position>();
+    }
+    @Override
+    public boolean step(Board b,Position p){return false;};
     @Override
     public boolean isFirstStep(){return isFirstStep;};
     Position pos;
@@ -46,5 +51,7 @@ public class Piece implements PieceInterface {
     Color color;
     ImageIcon picture;
     Vector<Position> validSteps;
+    Vector<Position> checkingPositions;
+    public boolean isChecking=false;
     boolean isFirstStep=true;
 }

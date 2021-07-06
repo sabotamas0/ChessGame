@@ -23,7 +23,7 @@ public class Main {
         nem tud más babu a király segitségére lenni pl:ellenfél elé állni
         https://www.chess.com/terms/checkmate-chess
 
-        sakk
+        sakk -> tipus amiben benne van a babu tipusa, szine, pozicioja(ahol sakkot add) -> checkingPiece
         matt
         berosálás
         paraszt menet közbeni ütése(en passant)

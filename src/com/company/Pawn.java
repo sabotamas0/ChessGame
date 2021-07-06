@@ -119,6 +119,7 @@ public class Pawn extends Piece{
     @Override
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         validSteps.clear();
+        checkingPositions.clear();
         isChecking=false;
         if(getColor().equals(Color.WHITE)){
             Position pULeft=new Position(pos.x-1, pos.y-1);
@@ -160,9 +161,10 @@ public class Pawn extends Piece{
                         King king=(King) b.table.get(pULeft.y).get(pULeft.x).piece;
                         king.isChecked=true;
                         isChecking=true;
+                        checkingPositions.add(pULeft);
                     }
                 }
-                if(pEnPassantLeft.y==2){
+                if(pEnPassantLeft.y==2 && pLeft.x >=0){
                     if (b.table.get(pLeft.y).get(pLeft.x).piece.getType().equals(PIECETYPE.PAWN)) {
                         if (!b.table.get(pLeft.y).get(pLeft.x).piece.getColor().equals(getColor())) {
                             Pawn pawn = (Pawn) b.table.get(pLeft.y).get(pLeft.x).piece;
@@ -176,7 +178,7 @@ public class Pawn extends Piece{
                         }
                     }
                 }
-                if(pEnPassantRight.y==2){
+                if(pEnPassantRight.y==2 && pRight.x<8){
                     if (b.table.get(pRight.y).get(pRight.x).piece.getType().equals(PIECETYPE.PAWN)) {
                         if (!b.table.get(pRight.y).get(pRight.x).piece.getColor().equals(getColor())) {
                             Pawn pawn = (Pawn) b.table.get(pRight.y).get(pRight.x).piece;
@@ -203,6 +205,7 @@ public class Pawn extends Piece{
                         King king=(King) b.table.get(pURight.y).get(pURight.x).piece;
                         king.isChecked=true;
                         isChecking=true;
+                        checkingPositions.add(pURight);
                     }
                 }
             }
@@ -243,8 +246,14 @@ public class Pawn extends Piece{
                             validSteps.add(pDLeft);
                         }
                     }
+                    else if (b.table.get(pDLeft.y).get(pDLeft.x).piece.getType().equals(PIECETYPE.KING)){
+                        King king=(King) b.table.get(pDLeft.y).get(pDLeft.x).piece;
+                        king.isChecked=true;
+                        isChecking=true;
+                        checkingPositions.add(pDLeft);
+                    }
                 }
-                if(pEnPassantLeft.y==5){
+                if(pEnPassantLeft.y==5 && pLeft.x>=0){
                     if (b.table.get(pLeft.y).get(pLeft.x).piece.getType().equals(PIECETYPE.PAWN)) {
                         if (!b.table.get(pRight.y).get(pLeft.x).piece.getColor().equals(getColor())) {
                             Pawn pawn = (Pawn) b.table.get(pLeft.y).get(pLeft.x).piece;
@@ -258,7 +267,7 @@ public class Pawn extends Piece{
                         }
                     }
                 }
-                if(pEnPassantRight.y==5){
+                if(pEnPassantRight.y==5 && pRight.x<8){
                     if (b.table.get(pRight.y).get(pRight.x).piece.getType().equals(PIECETYPE.PAWN)) {
                         if (!b.table.get(pRight.y).get(pRight.x).piece.getColor().equals(getColor())) {
                             Pawn pawn = (Pawn) b.table.get(pRight.y).get(pRight.x).piece;
@@ -281,16 +290,22 @@ public class Pawn extends Piece{
                             validSteps.add(pDRight);
                         }
                     }
+                    else if (b.table.get(pDRight.y).get(pDRight.x).piece.getType().equals(PIECETYPE.KING)){
+                        King king=(King) b.table.get(pDRight.y).get(pDRight.x).piece;
+                        king.isChecked=true;
+                        isChecking=true;
+                        checkingPositions.add(pDRight);
+                    }
                 }
             }
         }
         return validSteps;
     }
     @Override
-    public void step(Board b, Position p) {
+    public boolean step(Board b, Position p) {
         if(!(b.whiteTurn && getColor().equals(Color.white) || !b.whiteTurn && getColor().equals(Color.black)))
         {
-            return;
+            return false;
         }
         if(b.table.get(p.y).get(p.x).piece.getType().equals(PIECETYPE.DEFAULT)){
             b.table.get(this.pos.y).get(this.pos.x).piece=b.table.get(p.y).get(p.x).piece;
@@ -330,6 +345,11 @@ public class Pawn extends Piece{
                 isFirstStep=false;
             }
         }
+        return true;
+    }
+    @Override
+    public Vector<Position> getCheckingPositions() {
+        return checkingPositions;
     }
 
 }
