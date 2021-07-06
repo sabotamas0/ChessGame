@@ -1,12 +1,15 @@
 package com.company;
 
 import java.awt.*;
+import java.util.Vector;
 
 public interface PieceInterface {
     PIECETYPE getType();
     Position getPosition();
     Color getColor();
-    void getAvalaibleSteps(Board b);
-    void step(Board b,Position p);
+    Vector<Position> getAvalaibleSteps(Board b,boolean colorize);
+    Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean callIsChecked);
+    Vector<Position> getCheckingPositions();
+    boolean step(Board b,Position p);
     boolean isFirstStep();
 }

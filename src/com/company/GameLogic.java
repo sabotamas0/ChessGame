@@ -4,11 +4,16 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.event.*;
 import java.awt.*;
+import java.util.Stack;
+import java.util.Vector;
+
 import com.company.PIECETYPE;
 public class GameLogic implements ActionListener {
     Board mBoard;
+    enum GLOBALSTATE{CHECK,STALEMATE,DEFAULT,CHECKMATE};
     //int prevPosX=-1;
     //int prevPosY=-1;
+    public Position previousStep;
     Position previousPosition;
     public GameLogic(Board b){
         mBoard=b;
@@ -24,6 +29,7 @@ public class GameLogic implements ActionListener {
          */
         //PARASZTOK
         //feher
+
         pawnCreator(new Pawn(Color.white),new Position(0,6));
         pawnCreator(new Pawn(Color.white),new Position(1,6));
         pawnCreator(new Pawn(Color.white),new Position(2,6));
@@ -33,6 +39,8 @@ public class GameLogic implements ActionListener {
         pawnCreator(new Pawn(Color.white),new Position(6,6));
         pawnCreator(new Pawn(Color.white),new Position(7,6));
         //fekete
+
+
         pawnCreator(new Pawn(Color.black),new Position(0,1));
         pawnCreator(new Pawn(Color.black),new Position(1,1));
         pawnCreator(new Pawn(Color.black),new Position(2,1));
@@ -44,10 +52,12 @@ public class GameLogic implements ActionListener {
         //királyok
         //feher
         kingCreator(new King(Color.white),new Position(4,7));
+
         //fekete
         kingCreator(new King(Color.black),new Position(4,0));
         //királyok
         //feher
+
         queenCreator(new Queen(Color.white),new Position(3,7));
         //fekete
         queenCreator(new Queen(Color.black),new Position(3,0));
@@ -70,49 +80,247 @@ public class GameLogic implements ActionListener {
         knightCreator(new Knight(Color.white),new Position(1,7));
         knightCreator(new Knight(Color.white),new Position(6,7));
         //fekete
+
+
+
         knightCreator(new Knight(Color.black),new Position(1,0));
         knightCreator(new Knight(Color.black),new Position(6,0));
         //pawnCreator(new Pawn(Color.black),new Position(6,3));
-        //kingCreator(new King(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteKing.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(4,7));
-        //rookCreator(new Rook(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\blackRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.BLACK,new Position(4,4));
-        //rookCreator(new Rook(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(2,4));
-        //rookCreator(new Rook(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(6,4));
+
+
+
+
+
+
 
        // knightCreator(new Knight(Color.white),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteKnight.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(4,4));
         //bishopCreator(new Bishop(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteBishop.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(3,3));
         //queenCreator(new Queen(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteQueen.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(2,3));
     }
-    void pawnCreator(Pawn pawn,Position p){
+    public void pawnCreator(Pawn pawn,Position p){
         pawn.pos=p;
         mBoard.table.get(pawn.pos.y).get(pawn.pos.x).button.setIcon(pawn.picture);
         mBoard.table.get(pawn.pos.y).get(pawn.pos.x).piece=pawn;
     }
-    void kingCreator(King king,Position p){
+
+    public void setKingCheckedFalse()
+    {
+        for(int i = 0;i < 8;++i) {
+            for (int j = 0; j < 8; ++j) {
+                if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KING)) {
+                    King king = (King) mBoard.table.get(i).get(j).piece;
+                    king.isChecked=false;
+                }
+            }
+        }
+    }
+    boolean isPieceDetachable(Piece piece){
+        boolean detachable=false;
+        for(int i = 0;i < 8 && !detachable;++i) {
+            for (int j = 0; j < 8 && !detachable; ++j) {
+                if(!piece.getColor().equals(mBoard.table.get(i).get(j).piece.getColor()) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)) {
+                    Vector<Position> pieceAvalaibleSteps=mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard,false);
+                    if(pieceAvalaibleSteps.contains(piece.pos)){
+                        detachable=true;
+                    }
+                }
+            }
+        }
+        return detachable;
+    }
+    boolean isChecked(King king) {
+        boolean isChecked=false;
+        for(int i = 0;i < 8 && !isChecked;++i) {
+            for (int j = 0; j < 8 && !isChecked; ++j) {
+                if(!king.getColor().equals(mBoard.table.get(i).get(j).piece.getColor()) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KING) &&mBoard.table.get(i).get(j).piece.isChecking) {
+                    Vector<Position> pieceCheckingPositions=new Vector<Position>();
+                    if (mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.QUEEN)) {
+                        Queen q= (Queen)mBoard.table.get(i).get(j).piece;
+                        pieceCheckingPositions = q.getCheckingPositions();
+                    }
+                    else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.BISHOP))
+                    {
+                        pieceCheckingPositions = ((Bishop) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                    }
+                    else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.PAWN))
+                    {
+                        pieceCheckingPositions = ((Pawn) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                    }
+                    else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KNIGHT))
+                    {
+                        pieceCheckingPositions = ((Knight) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                    }
+                    else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.ROOK))
+                    {
+                        pieceCheckingPositions = ((Rook) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                    }
+                    isChecked = pieceCheckingPositions.contains(king.pos);
+                }
+            }
+        }
+        return isChecked;
+    }
+
+    boolean isCheckNeutralized(Piece piece){
+        boolean neutralized=false;
+        for(int i = 0;i < 8 && !neutralized;++i) {
+            for (int j = 0; j < 8 && !neutralized; ++j) {
+                if(!piece.getColor().equals(mBoard.table.get(i).get(j).piece.getColor()) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KING)) {
+                    Vector<Position> pieceCheckingPositions=piece.getCheckingPositions();
+                    if(mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard,false).containsAll(pieceCheckingPositions)){
+                        neutralized=true;
+                    }
+                }
+            }
+        }
+        return neutralized;
+    }
+    boolean isKingDefendable(King king){
+        for(int i = 0;i < 8;++i) {
+            for (int j = 0; j < 8; ++j) {
+                if(mBoard.table.get(i).get(j).piece.isChecking) {
+                    if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KNIGHT) && !isPieceDetachable(mBoard.table.get(i).get(j).piece)){
+                        return false;
+                    }
+                    else{
+                        if(isCheckNeutralized(mBoard.table.get(i).get(j).piece) || isPieceDetachable(mBoard.table.get(i).get(j).piece)){
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    GLOBALSTATE getGameState(){
+        Vector<Position> dangerousPositions= new Vector<Position>();
+        Vector<Position> kingPositions= new Vector<Position>();
+        King wKing=new King(Color.white);
+        King bKing=new King(Color.white);
+        //ha más állapotot csinálunk van e egyáltalán király a táblán
+        for(int i = 0;i < 8;++i) {
+            for (int j = 0; j < 8; ++j) {
+                if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KING)){
+                    if(mBoard.whiteTurn)
+                    {
+                        if(mBoard.table.get(i).get(j).piece.getColor().equals(Color.white)) {
+                            wKing = (King) mBoard.table.get(i).get(j).piece;
+                            kingPositions=wKing.getAvalaibleSteps(mBoard,false,false);
+                        }
+                        else
+                        {
+                            bKing=(King) mBoard.table.get(i).get(j).piece;
+                        }
+                    }
+                    else
+                    {
+                        if(mBoard.table.get(i).get(j).piece.getColor().equals(Color.black)) {
+                            bKing = (King) mBoard.table.get(i).get(j).piece;
+                            kingPositions=bKing.getAvalaibleSteps(mBoard,false,false);
+                        }
+                        else
+                        {
+                            wKing=(King) mBoard.table.get(i).get(j).piece;
+                        }
+                    }
+                }
+                else if(!mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT))
+                {
+                    if(mBoard.whiteTurn){
+                        if(mBoard.table.get(i).get(j).piece.getColor().equals(Color.black)){
+                            dangerousPositions.addAll(mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard,false));
+                        }
+                    }
+                    else{
+                        if(mBoard.table.get(i).get(j).piece.getColor().equals(Color.white)){
+                            dangerousPositions.addAll(mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard,false));
+                        }
+                    }
+                }
+            }
+        }
+        GLOBALSTATE state=GLOBALSTATE.DEFAULT;
+        boolean isCheck=false;
+        //annak az állapotnak nem kéne fennálni hogy a másik ragad be és az aktuális király van sakkban
+        //todo ezt szépen megírni.
+        if(mBoard.whiteTurn)
+        {
+            isCheck=wKing.isChecked || bKing.isChecked;
+        }
+        else
+        {
+            isCheck=bKing.isChecked || wKing.isChecked;
+        }
+        boolean kingIsStuck=false;
+        if(kingPositions.isEmpty())
+        {
+            //TODO
+            //kingIsStuck=true;
+        }
+        else if (dangerousPositions.containsAll(kingPositions))
+        {
+            kingIsStuck=true;
+        }
+
+        if(kingIsStuck){
+            if(mBoard.whiteTurn && !isKingDefendable(wKing))
+            {
+                state=GLOBALSTATE.CHECKMATE;
+            }
+            else if(!isKingDefendable(bKing) ){
+                state=GLOBALSTATE.CHECKMATE;
+            }
+            else if(isChecked(wKing) ||isChecked(bKing)){
+                state=GLOBALSTATE.CHECK;
+            }
+            /*
+            else if(!kingPositions.isEmpty()) {
+                state = GLOBALSTATE.STALEMATE;
+            }
+            */
+        }
+        else{
+            if(isChecked(wKing) ||isChecked(bKing)){
+                state=GLOBALSTATE.CHECK;
+            }
+        }
+        if(bKing.pos.y==-1 ||wKing.pos.y==-1 )
+        {
+            //ha akarjuk állítani akkor todo
+            state=GLOBALSTATE.DEFAULT;
+        }
+        return state;
+    }
+    public void kingCreator(King king,Position p){
         king.pos=p;
         mBoard.table.get(king.pos.y).get(king.pos.x).button.setIcon(king.picture);
         mBoard.table.get(king.pos.y).get(king.pos.x).piece=king;
     }
-    void knightCreator(Knight knight,Position p) {
+    public void knightCreator(Knight knight,Position p) {
         knight.pos = p;
         mBoard.table.get(knight.pos.y).get(knight.pos.x).button.setIcon(knight.picture);
         mBoard.table.get(knight.pos.y).get(knight.pos.x).piece = knight;
     }
-    void queenCreator(Queen queen,Position p) {
+    public void queenCreator(Queen queen,Position p) {
         queen.pos = p;
         mBoard.table.get(queen.pos.y).get(queen.pos.x).button.setIcon(queen.picture);
         mBoard.table.get(queen.pos.y).get(queen.pos.x).piece = queen;
     }
-    void bishopCreator(Bishop bishop,Position p) {
+    public void bishopCreator(Bishop bishop,Position p) {
         bishop.pos = p;
         mBoard.table.get(bishop.pos.y).get(bishop.pos.x).button.setIcon(bishop.picture);
         mBoard.table.get(bishop.pos.y).get(bishop.pos.x).piece = bishop;
     }
-    void rookCreator(Rook rook,Position p){
+    public void rookCreator(Rook rook,Position p){
         rook.pos=p;
         mBoard.table.get(rook.pos.y).get(rook.pos.x).button.setIcon(rook.picture);
         mBoard.table.get(rook.pos.y).get(rook.pos.x).piece=rook;
     }
-    void setBorderLightGray(){
+    public void setBorderLightGray(){
         for(int i = 0;i< 8;++i) {
             for (int j = 0; j < 8; ++j) {
                 mBoard.table.get(i).get(j).button.setBorder(new LineBorder(Color.lightGray));
@@ -124,128 +332,181 @@ public class GameLogic implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         //lépésellenrzés
         setBorderLightGray();
+        boolean stepped=false;
         for(int i = 0;i< 8;++i) {
             for (int j = 0; j < 8; ++j) {
-                if(e.getSource()==mBoard.table.get(i).get(j).button /*&& mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)*/){
-                    if(previousPosition.y !=-1 &&(previousPosition.y!=i ||previousPosition.x!=j)){
-                        if(mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.ROOK)) {
+                if (e.getSource() == mBoard.table.get(i).get(j).button /*&& mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)*/) {
+                    if (previousPosition.y != -1 && (previousPosition.y != i || previousPosition.x != j)) {
+                        if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.ROOK)) {
                             Rook rook = (Rook) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
                             for (Position p : rook.validSteps) {
                                 if (p.x == j && p.y == i) {
-                                    rook.step(mBoard, new Position(j, i));
+                                    setKingCheckedFalse();
+                                    if(stepped=rook.step(mBoard, new Position(j, i))) {
+                                        previousStep = new Position(j, i);
+                                    }
                                     break;
                                 }
                             }
 
                         }
-                        if(mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.KING)) {
+                        if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.KING)) {
                             King king = (King) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
                             for (Position p : king.validSteps) {
                                 if (p.x == j && p.y == i) {
-                                    king.step(mBoard, new Position(j, i));
+                                    if(stepped=king.step(mBoard, new Position(j, i))) {
+                                       previousStep = new Position(j, i);
+                                    }
                                     break;
                                 }
                             }
 
                         }
-                        if(mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.PAWN)) {
+                        if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.PAWN)) {
                             Pawn pawn = (Pawn) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
                             for (Position p : pawn.validSteps) {
                                 if (p.x == j && p.y == i) {
-                                    pawn.step(mBoard, new Position(j, i));
+                                    setKingCheckedFalse();
+                                    if(stepped= pawn.step(mBoard, new Position(j, i))) {
+                                        previousStep = new Position(j, i);
+                                    }
                                     break;
                                 }
                             }
                         }
-                        if(mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.BISHOP)) {
+                        if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.BISHOP)) {
                             Bishop bishop = (Bishop) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
                             for (Position p : bishop.validSteps) {
                                 if (p.x == j && p.y == i) {
-                                    bishop.step(mBoard, new Position(j, i));
+                                    setKingCheckedFalse();
+                                    if(stepped=bishop.step(mBoard, new Position(j, i))) {
+                                        previousStep = new Position(j, i);
+                                    }
                                     break;
                                 }
                             }
                         }
-                        if(mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.QUEEN)) {
+                        if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.QUEEN)) {
                             Queen queen = (Queen) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
                             for (Position p : queen.validSteps) {
                                 if (p.x == j && p.y == i) {
-                                    queen.step(mBoard, new Position(j, i));
+                                    setKingCheckedFalse();
+                                    if(stepped= queen.step(mBoard, new Position(j, i))) {
+                                        previousStep = new Position(j, i);
+                                    }
                                     break;
                                 }
                             }
                         }
-                        if(mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.KNIGHT)) {
+                        if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.KNIGHT)) {
                             Knight knight = (Knight) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
                             for (Position p : knight.validSteps) {
                                 if (p.x == j && p.y == i) {
-                                    knight.step(mBoard, new Position(j, i));
+                                    setKingCheckedFalse();
+                                    if(stepped=knight.step(mBoard, new Position(j, i))) {
+                                        previousStep = new Position(j, i);
+                                    }
                                     break;
                                 }
                             }
 
                         }
-                        previousPosition.x=j;
-                        previousPosition.y=i;
-
+                        previousPosition.x = j;
+                        previousPosition.y = i;
                     }
                 }
             }
         }
-        for(int i = 0;i< 8;++i) {
-            for (int j = 0; j < 8; ++j) {
+
+
+
+
+
+        if(previousStep != null) {
+            mBoard.table.get(previousStep.y).get(previousStep.x).button.setBorder(new LineBorder(Color.CYAN));
+        }
+        boolean detected=false;
+        for(int i = 0;i< 8 && !detected;++i) {
+            for (int j = 0; j < 8&& !detected; ++j) {
                 if(e.getSource()==mBoard.table.get(i).get(j).button){
                     if(PIECETYPE.PAWN.equals(mBoard.table.get(i).get(j).piece.getType())){
                         Pawn pawn = (Pawn)mBoard.table.get(i).get(j).piece;
-                        pawn.getAvalaibleSteps(mBoard);
+                        pawn.getAvalaibleSteps(mBoard,true);
                         previousPosition.x=j;
                         previousPosition.y=i;
-                        return;
+                        detected=true;
                     }
                     if(PIECETYPE.KING.equals(mBoard.table.get(i).get(j).piece.getType())){
                         King king = (King)mBoard.table.get(i).get(j).piece;
-                        king.getAvalaibleSteps(mBoard);
+                        king.getAvalaibleSteps(mBoard,true,true);
                         previousPosition.x=j;
                         previousPosition.y=i;
-                        return;
+                        detected=true;
                     }
                     if(PIECETYPE.ROOK.equals(mBoard.table.get(i).get(j).piece.getType())){
                         Rook rook = (Rook)mBoard.table.get(i).get(j).piece;
-                        rook.getAvalaibleSteps(mBoard);
+                        rook.getAvalaibleSteps(mBoard,true);
                         //lépés
                         previousPosition.x=j;
                         previousPosition.y=i;
-                        return;
+                        detected=true;
                     }
                     if(PIECETYPE.KNIGHT.equals(mBoard.table.get(i).get(j).piece.getType())){
                         Knight knight = (Knight)mBoard.table.get(i).get(j).piece;
-                        knight.getAvalaibleSteps(mBoard);
+                        knight.getAvalaibleSteps(mBoard,true);
                         previousPosition.x=j;
                         previousPosition.y=i;
-                        return;
+                        detected=true;
                     }
                     if(PIECETYPE.BISHOP.equals(mBoard.table.get(i).get(j).piece.getType())){
                         Bishop bishop = (Bishop)mBoard.table.get(i).get(j).piece;
-                        bishop.getAvalaibleSteps(mBoard);
+                        bishop.getAvalaibleSteps(mBoard,true);
                         previousPosition.x=j;
                         previousPosition.y=i;
-                        return;
+                        detected=true;
                     }
                     if(PIECETYPE.QUEEN.equals(mBoard.table.get(i).get(j).piece.getType())){
                         Queen queen = (Queen) mBoard.table.get(i).get(j).piece;
-                        queen.getAvalaibleSteps(mBoard);
+                        queen.getAvalaibleSteps(mBoard,true);
                         previousPosition.x=j;
                         previousPosition.y=i;
-                        return;
+                        detected=true;
                     }
                 }
             }
         }
+        if(stepped)
+        {
+            //mBoard.whiteTurn=!mBoard.whiteTurn;
+            GLOBALSTATE state =getGameState();
+            switch (state){
+                case CHECK -> JOptionPane.showMessageDialog(mBoard.panel,"Sakk");
 
+                case CHECKMATE -> JOptionPane.showMessageDialog(mBoard.panel,"SakkMatt");
+                case STALEMATE -> JOptionPane.showMessageDialog(mBoard.panel,"Dontetlen");
+            }
+            //mBoard.whiteTurn=!mBoard.whiteTurn;
+        }
+        if(detected)
+        {
+            return;
+        }
+        //melyik bábú lépett utoljára + //ezt a kövi órára cyan
+        /*
+        lep a babu
+        az egy pozicio
+        poziciot elmentem
+        azt a poziciot kulon be/ki szinezni egy feltétel mellet
+         */
         for(int i = 0;i< 8;++i) {
             for (int j = 0; j < 8; ++j) {
                 mBoard.table.get(i).get(j).button.setBorder(new LineBorder(Color.lightGray));
             }
         }
+
+        if(previousStep != null) {
+            mBoard.table.get(previousStep.y).get(previousStep.x).button.setBorder(new LineBorder(Color.CYAN));
+        }
+
     }
 }

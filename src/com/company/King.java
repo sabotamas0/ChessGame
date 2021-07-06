@@ -7,22 +7,58 @@ import java.awt.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.util.Vector;
 import javax.swing.JComponent;
 
 public class King extends Piece{
+    boolean isChecked;
+    Vector<Position> dangerousPositions;
     public King(Color c){
         if(c.equals(Color.white)) {
-            picture = new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteKing.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
+            picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteKing.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
         }
         else {
-            picture = new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\blackKing.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
+            picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\blackKing.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
         }
         type=PIECETYPE.KING;
         color=c;
+        dangerousPositions=new Vector<Position>();
+    }
+    /*
+    a valid stepsben ellenőrizni kell azt hogy az adott pocícióra lépéssel sakkba kerül e az én királyom,
+    ha igen akkor ez a pozició nem valid
+     */
+    boolean isPositionChecked(Position pos,Board b){
+        boolean checked=false;
+        for(int i = 0;i< 8 && !checked;++i) {
+            for (int j = 0; j < 8 && !checked; ++j) {
+                    if (!b.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT) && !b.table.get(i).get(j).piece.getColor().equals(this.getColor())) {
+                        /*if(b.table.get(i).get(j).piece.getType().equals(PIECETYPE.QUEEN)) {*/
+                        if (b.table.get(i).get(j).piece.getType().equals(PIECETYPE.KING)) {
+                            if(((King)(b.table.get(i).get(j).piece)).getAvalaibleSteps(b, false,false).contains(pos))
+                            {
+                                checked=true;
+                            }
+                        }
+                        else if (b.table.get(i).get(j).piece.getAvalaibleSteps(b, false).contains(pos)) {
+                            PIECETYPE p = b.table.get(i).get(j).piece.getType();
+                            checked=true;
+                        }
+
+                        }
+                    }
+                }
+
+        return checked;
     }
     @Override
-    public void getAvalaibleSteps(Board b) {
+    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
+        return getAvalaibleSteps(b,colorize,true);
+    }
+    @Override
+    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean callIsChecked){
         validSteps.clear();
+        Position step;
         for(int i=pos.x-1;i<pos.x+2;++i){
             for(int j=pos.y-1;j<pos.y+2;++j){
                 if(j<8 && j>=0 && i>=0 && i<8){
@@ -32,16 +68,28 @@ public class King extends Piece{
                         other = b.table.get(j).get(i).piece.getColor();
                     }
                     boolean isEnemy = !other.equals(getColor());
+                    step=new Position(i, j);
                     if (type.equals(PIECETYPE.DEFAULT) || (!type.equals(PIECETYPE.KING) && isEnemy)){
-                        validSteps.add(new Position(i,j));
+                        if(callIsChecked) {
+                            if(!isPositionChecked(step,b)){
+                                validSteps.add(step);
+                            }
+
+                        }
+                        else
+                        {
+                            validSteps.add(step);
+                        }
                     }
                 }
             }
         }
         for(int i = 0;i<validSteps.size();++i) {
-            b.table.get(validSteps.get(i).y).get(validSteps.get(i).x).button.setBorder(new LineBorder(Color.GREEN));
+            if(colorize) {
+                b.table.get(validSteps.get(i).y).get(validSteps.get(i).x).button.setBorder(new LineBorder(Color.GREEN));
+            }
         }
-        if(isFirstStep){
+        if(isFirstStep&&!isChecked){
             Position pLeftTwo=new Position(this.pos.x-2,this.pos.y);
             Position pLeftOne=new Position(this.pos.x-1,this.pos.y);
             Position pRightTwo=new Position(this.pos.x+2,this.pos.y);
@@ -71,7 +119,9 @@ public class King extends Piece{
                     if(oneIsDefault && twoIsDefault && typeIsRook && isRooksFirstStep){
                         //b.table.get(pRightTwo.y).get(pRightTwo.x).button.getGraphics().setColor(Color.green);
                         //b.table.get(pRightTwo.y).get(pRightTwo.x).button.getGraphics().fillOval(0, 0, 25, 25);
-                        b.table.get(pRightTwo.y).get(pRightTwo.x).button.setBorder(new LineBorder(Color.CYAN));
+                        if(colorize) {
+                            b.table.get(pRightTwo.y).get(pRightTwo.x).button.setBorder(new LineBorder(Color.CYAN));
+                        }
                         validSteps.add(pRightTwo);
                     }
                 }
@@ -100,28 +150,30 @@ public class King extends Piece{
                     if(oneIsDefault && twoIsDefault && typeIsRook && isRooksFirstStep){
                         //b.table.get(pRightTwo.y).get(pRightTwo.x).button.getGraphics().setColor(Color.green);
                         //b.table.get(pRightTwo.y).get(pRightTwo.x).button.getGraphics().fillOval(0, 0, 25, 25);
-                        b.table.get(pRightTwo.y).get(pRightTwo.x).button.setBorder(new LineBorder(Color.CYAN));
+                        if(colorize) {
+                            b.table.get(pRightTwo.y).get(pRightTwo.x).button.setBorder(new LineBorder(Color.CYAN));
+                        }
                         validSteps.add(pRightTwo);
                     }
                 }
             }
         }
 
-
+        return validSteps;
     }
 
     @Override
-    public void step(Board b, Position p) {
+    public boolean step(Board b, Position p) {
         if(!(b.whiteTurn && getColor().equals(Color.white) || !b.whiteTurn && getColor().equals(Color.black)))
         {
-            return;
+            return false;
         }
         if(b.table.get(p.y).get(p.x).piece.getType().equals(PIECETYPE.DEFAULT)){
             b.table.get(this.pos.y).get(this.pos.x).piece=b.table.get(p.y).get(p.x).piece;
             b.table.get(this.pos.y).get(this.pos.x).button.setIcon(null);
             b.table.get(p.y).get(p.x).piece=this;
             b.table.get(p.y).get(p.x).button.setIcon(this.picture);
-            this.pos=p;
+            this.pos = p;
             if(isFirstStep && p.x==2 && p.y==7){
                 b.table.get(7).get(0).piece.step(b,new Position(3,7));
             }
@@ -137,13 +189,17 @@ public class King extends Piece{
             else{
                 b.whiteTurn=!b.whiteTurn;
             }
-
             isFirstStep=false;
+
+            /*
+            if(b.checkedPositions.contains(p)){
+                JOptionPane.showMessageDialog(b.panel,"Sakk");
+            }
+            */
 
         }
         else if(!b.table.get(p.y).get(p.x).piece.getColor().equals(getColor())){
             if(!b.table.get(p.y).get(p.x).piece.getType().equals(PIECETYPE.KING)){
-
                 b.table.get(this.pos.y).get(this.pos.x).button.setIcon(null);
                 b.table.get(p.y).get(p.x).piece=this;
                 b.table.get(p.y).get(p.x).button.setIcon(this.picture);
@@ -151,7 +207,11 @@ public class King extends Piece{
                 this.pos=p;
                 b.whiteTurn=!b.whiteTurn;
             }
-
         }
+        return true;
+    }
+    @Override
+    public Vector<Position> getCheckingPositions() {
+        return checkingPositions;
     }
 }

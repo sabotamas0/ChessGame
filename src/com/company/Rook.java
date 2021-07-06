@@ -10,96 +10,166 @@ import java.util.Vector;
 public class Rook extends Piece{
     public Rook(Color c){
         if(c.equals(Color.white)) {
-            picture = new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
+            picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
         }
         else {
-            picture = new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\blackRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
+            picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\blackRook.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
         }
         type=PIECETYPE.ROOK;
         color=c;
     }
     @Override
-    public void getAvalaibleSteps(Board b) {
+    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         validSteps.clear();
+        checkingPositions.clear();
+        isChecking=false;
+        Vector<Position> positions=new Vector<Position>();
         //a mi poziciónkból balra
-        int x=pos.x;
-        int y=pos.y;
+        int x;
+        int y;
+        x=pos.x;
+        y=pos.y;
         for(int i = x;i>=0;--i) {
             if(x==i){
                 continue;
             }
-            //TODO csekkolni hogy ez a király e mert akkor sakk van.
-            if(!b.table.get(y).get(i).piece.getType().equals(PIECETYPE.DEFAULT)){
+
+            if(!b.table.get(y).get(i).piece.getType().equals(PIECETYPE.DEFAULT) && !b.table.get(y).get(i).piece.getType().equals(PIECETYPE.KING)){
                 if(!b.table.get(y).get(i).piece.getColor().equals(getColor()))
                 {
                     validSteps.add(new Position(i, y));
+                    positions.add(new Position(i, y));
+                }
+                break;
+
+            }
+            if(b.table.get(y).get(i).piece.getType().equals(PIECETYPE.KING)){
+                if(!b.table.get(y).get(i).piece.getColor().equals(getColor()))
+                {
+                    King king=(King) b.table.get(y).get(i).piece;
+                    king.isChecked=true;
+                    isChecking=true;
+                    positions.add(new Position(i, y));
+                    checkingPositions.addAll(positions);
+                    //JOptionPane.showMessageDialog(b.panel,"Sakk");
                 }
                 break;
 
             }
             validSteps.add(new Position(i, y));
+            positions.add(new Position(i, y));
         }
         ///////////////////////////////////
         //a mi poziciónkból jobbra
         x=pos.x;
         y=pos.y;
+        positions.clear();
         for(int i = x;i<8;++i) {
             if(x==i){
                 continue;
             }
             //TODO csekkolni hogy ez a király e mert akkor sakk van.
-            if(!b.table.get(y).get(i).piece.getType().equals(PIECETYPE.DEFAULT)){
+            if(!b.table.get(y).get(i).piece.getType().equals(PIECETYPE.DEFAULT) && !b.table.get(y).get(i).piece.getType().equals(PIECETYPE.KING)){
                 if(!b.table.get(y).get(i).piece.getColor().equals(getColor()))
                 {
                     validSteps.add(new Position(i, y));
+                    positions.add(new Position(i, y));
                 }
                 break;
-
             }
+            if(b.table.get(y).get(i).piece.getType().equals(PIECETYPE.KING)) {
+                if(!b.table.get(y).get(i).piece.getColor().equals(getColor())) {
+                    King king=(King) b.table.get(y).get(i).piece;
+                    king.isChecked=true;
+                    isChecking=true;
+                    positions.add(new Position(i, y));
+                    checkingPositions.addAll(positions);
+                    //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                break;
+            }
+            positions.add(new Position(i, y));
             validSteps.add(new Position(i, y));
         }
         x=pos.x;
         y=pos.y;
+        positions.clear();
         for(int i = y;i>=0;--i) {
             if(y==i){
                 continue;
             }
-            if(!b.table.get(i).get(x).piece.getType().equals(PIECETYPE.DEFAULT)){
+            if(!b.table.get(i).get(x).piece.getType().equals(PIECETYPE.DEFAULT) && !b.table.get(i).get(x).piece.getType().equals(PIECETYPE.KING)){
                 if(!b.table.get(i).get(x).piece.getColor().equals(getColor()))
                 {
                     validSteps.add(new Position(x, i));
+                    positions.add(new Position(x, i));
                 }
                 break;
 
             }
+            if(b.table.get(i).get(x).piece.getType().equals(PIECETYPE.KING)){
+                if(!b.table.get(i).get(x).piece.getColor().equals(getColor()))
+                {
+                    King king=(King) b.table.get(i).get(x).piece;
+                    king.isChecked=true;
+                    isChecking=true;
+                    positions.add(new Position(x, i));
+                    checkingPositions.addAll(positions);
+                    //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                break;
+            }
+            positions.add(new Position(x, i));
             validSteps.add(new Position(x, i));
         }
         x=pos.x;
         y=pos.y;
+        positions.clear();
         for(int i = y;i<8;++i) {
             if(y==i){
                 continue;
             }
-            if(!b.table.get(i).get(x).piece.getType().equals(PIECETYPE.DEFAULT)){
+            if(!b.table.get(i).get(x).piece.getType().equals(PIECETYPE.DEFAULT) && !b.table.get(i).get(x).piece.getType().equals(PIECETYPE.KING)){
                 if(!b.table.get(i).get(x).piece.getColor().equals(getColor()))
                 {
                     validSteps.add(new Position(x, i));
+                    positions.add(new Position(x, i));
+                }
+                break;
+
+            }
+            if(b.table.get(i).get(x).piece.getType().equals(PIECETYPE.KING)){
+                if(!b.table.get(i).get(x).piece.getColor().equals(getColor()))
+                {
+                    King king=(King) b.table.get(i).get(x).piece;
+                    king.isChecked=true;
+                    isChecking=true;
+                    positions.add(new Position(x, i));
+                    checkingPositions.addAll(positions);
+                    //JOptionPane.showMessageDialog(b.panel,"Sakk");
                 }
                 break;
 
             }
             validSteps.add(new Position(x, i));
+            positions.add(new Position(x, i));
         }
         for(int i = 0;i<validSteps.size();++i) {
-            b.table.get(validSteps.get(i).y).get(validSteps.get(i).x).button.setBorder(new LineBorder(Color.GREEN));
+            if(colorize) {
+                b.table.get(validSteps.get(i).y).get(validSteps.get(i).x).button.setBorder(new LineBorder(Color.GREEN));
+            }
         }
+        if(isChecking){
+            //JOptionPane.showMessageDialog(b.panel,"Sakk");
+        }
+        return validSteps;
     }
 
     @Override
-    public void step(Board b, Position p) {
+    public boolean step(Board b, Position p) {
         if(!(b.whiteTurn && getColor().equals(Color.white) || !b.whiteTurn && getColor().equals(Color.black)))
         {
-            return;
+            return false;
         }
         if(b.table.get(p.y).get(p.x).piece.getType().equals(PIECETYPE.DEFAULT)){
             b.table.get(this.pos.y).get(this.pos.x).piece=b.table.get(p.y).get(p.x).piece;
@@ -121,5 +191,10 @@ public class Rook extends Piece{
             }
 
         }
+        return true;
+    }
+    @Override
+    public Vector<Position> getCheckingPositions() {
+        return checkingPositions;
     }
 }

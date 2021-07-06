@@ -10,17 +10,20 @@ import java.util.Vector;
 public class Knight extends Piece{
     public Knight(Color c){
         if(c.equals(Color.white)) {
-            picture = new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteKnight.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
+            picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteKnight.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
         }
         else {
-            picture = new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\blackKnight.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
+            picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\blackKnight.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
         }
         type=PIECETYPE.KNIGHT;
         color=c;
     }
     @Override
-    public void getAvalaibleSteps(Board b) {
+    public  Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
+        checkingPositions.clear();
         validSteps.clear();
+        isChecking=false;
+        Vector<Position> positions=new Vector<Position>();
         Vector<Position> steps=new Vector<Position>();
         //csekkold hogy lelépsz e a pályáról
         steps.add(new Position(pos.x-1, pos.y-2));
@@ -44,6 +47,13 @@ public class Knight extends Piece{
                 boolean isEnemy = !other.equals(getColor());
                 if (type.equals(PIECETYPE.DEFAULT) || (!type.equals(PIECETYPE.KING) && isEnemy)){
                     validSteps.add(new Position(steps.get(i).x,steps.get(i).y));
+                    positions.add(new Position(steps.get(i).x,steps.get(i).y));
+                }
+                else if(isEnemy){
+                    King king=(King) b.table.get(steps.get(i).y).get(steps.get(i).x).piece;
+                    king.isChecked=true;
+                    isChecking=true;
+                    checkingPositions.addAll(positions);
                 }
             }
         }
@@ -55,15 +65,21 @@ public class Knight extends Piece{
         }
         */
         for(int i = 0;i<validSteps.size();++i) {
-            b.table.get(validSteps.get(i).y).get(validSteps.get(i).x).button.setBorder(new LineBorder(Color.GREEN));
+            if(colorize) {
+                b.table.get(validSteps.get(i).y).get(validSteps.get(i).x).button.setBorder(new LineBorder(Color.GREEN));
+            }
         }
+        if(isChecking){
+            //JOptionPane.showMessageDialog(b.panel,"Sakk");
+        }
+        return validSteps;
     }
 
     @Override
-    public void step(Board b, Position p) {
+    public boolean step(Board b, Position p) {
         if(!(b.whiteTurn && getColor().equals(Color.white) || !b.whiteTurn && getColor().equals(Color.black)))
         {
-            return;
+            return false;
         }
         if(b.table.get(p.y).get(p.x).piece.getType().equals(PIECETYPE.DEFAULT)){
             b.table.get(this.pos.y).get(this.pos.x).piece=b.table.get(p.y).get(p.x).piece;
@@ -85,5 +101,10 @@ public class Knight extends Piece{
             }
 
         }
+        return true;
+    }
+    @Override
+    public Vector<Position> getCheckingPositions() {
+        return checkingPositions;
     }
 }

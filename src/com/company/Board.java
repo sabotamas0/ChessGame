@@ -6,10 +6,12 @@ import java.util.Vector;
 import com.company.ButtonWithPiece;
 import com.company.PieceInterface;
 public class Board extends JFrame {
+    //Vector<CheckingPiece> potentialCheckingPieces;
     public JPanel panel;
     Vector<Vector<ButtonWithPiece>> table;
     public boolean whiteTurn;
     public Board(){
+
         String ablakFejlecSzoveg="Sakk";
         whiteTurn=true;
         this.setVisible(true);
@@ -55,7 +57,7 @@ public class Board extends JFrame {
             white=!white;
         }
     }
-    void addActionListener(ActionListener al){
+    public void addActionListener(ActionListener al){
         for(int i = 0;i< 8;++i) {
             for (int j = 0; j < 8; ++j) {
                 table.get(i).get(j).button.addActionListener(al);
