@@ -21,9 +21,9 @@ public class Knight extends Piece{
     @Override
     public  Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         checkingPositions.clear();
+        allyPieces.clear();
         validSteps.clear();
         isChecking=false;
-        Vector<Position> positions=new Vector<Position>();
         Vector<Position> steps=new Vector<Position>();
         //csekkold hogy lelépsz e a pályáról
         steps.add(new Position(pos.x-1, pos.y-2));
@@ -41,19 +41,22 @@ public class Knight extends Piece{
             if(steps.get(i).x<8 && steps.get(i).x>=0 && steps.get(i).y>=0 && steps.get(i).y<8 ){
                 PIECETYPE type = b.table.get(steps.get(i).y).get(steps.get(i).x).piece.getType();
                 Color other=getColor();
-                if(!type.equals(PIECETYPE.DEFAULT)){
+                boolean isDefault=type.equals(PIECETYPE.DEFAULT);
+                if(!isDefault){
                     other = b.table.get(steps.get(i).y).get(steps.get(i).x).piece.getColor();
                 }
                 boolean isEnemy = !other.equals(getColor());
-                if (type.equals(PIECETYPE.DEFAULT) || (!type.equals(PIECETYPE.KING) && isEnemy)){
+                if (isDefault || (!type.equals(PIECETYPE.KING) && isEnemy)){
                     validSteps.add(new Position(steps.get(i).x,steps.get(i).y));
-                    positions.add(new Position(steps.get(i).x,steps.get(i).y));
                 }
                 else if(isEnemy){
                     King king=(King) b.table.get(steps.get(i).y).get(steps.get(i).x).piece;
                     king.isChecked=true;
                     isChecking=true;
-                    checkingPositions.addAll(positions);
+                    checkingPositions.add(new Position(steps.get(i).x,steps.get(i).y));
+                }
+                else if(!isEnemy && !isDefault){
+                    allyPieces.add(b.table.get(steps.get(i).y).get(steps.get(i).x).piece);
                 }
             }
         }
@@ -102,9 +105,5 @@ public class Knight extends Piece{
 
         }
         return true;
-    }
-    @Override
-    public Vector<Position> getCheckingPositions() {
-        return checkingPositions;
     }
 }

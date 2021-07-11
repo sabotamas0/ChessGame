@@ -20,6 +20,7 @@ public class Bishop extends Piece{
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         validSteps.clear();
         checkingPositions.clear();
+        allyPieces.clear();
         isChecking=false;
         int x=pos.x;
         int y=pos.y;
@@ -37,6 +38,9 @@ public class Bishop extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -49,8 +53,12 @@ public class Bishop extends Piece{
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
+
             validSteps.add(new Position(x, y));
             positions.add(new Position(x, y));
         }
@@ -70,6 +78,9 @@ public class Bishop extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -81,6 +92,9 @@ public class Bishop extends Piece{
                     positions.add(new Position(x, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
                 }
                 break;
             }
@@ -103,6 +117,9 @@ public class Bishop extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -114,6 +131,9 @@ public class Bishop extends Piece{
                     positions.add(new Position(x, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
                 }
                 break;
             }
@@ -136,6 +156,9 @@ public class Bishop extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -147,6 +170,9 @@ public class Bishop extends Piece{
                     positions.add(new Position(x, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
                 }
                 break;
             }
@@ -191,9 +217,5 @@ public class Bishop extends Piece{
 
         }
         return true;
-    }
-    @Override
-    public Vector<Position> getCheckingPositions() {
-        return checkingPositions;
     }
 }

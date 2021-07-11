@@ -22,6 +22,7 @@ public class Rook extends Piece{
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         validSteps.clear();
         checkingPositions.clear();
+        allyPieces.clear();
         isChecking=false;
         Vector<Position> positions=new Vector<Position>();
         //a mi poziciónkból balra
@@ -40,6 +41,9 @@ public class Rook extends Piece{
                     validSteps.add(new Position(i, y));
                     positions.add(new Position(i, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
+                }
                 break;
 
             }
@@ -52,6 +56,9 @@ public class Rook extends Piece{
                     positions.add(new Position(i, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
                 }
                 break;
 
@@ -75,6 +82,9 @@ public class Rook extends Piece{
                     validSteps.add(new Position(i, y));
                     positions.add(new Position(i, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
+                }
                 break;
             }
             if(b.table.get(y).get(i).piece.getType().equals(PIECETYPE.KING)) {
@@ -85,6 +95,9 @@ public class Rook extends Piece{
                     positions.add(new Position(i, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
                 }
                 break;
             }
@@ -104,6 +117,9 @@ public class Rook extends Piece{
                     validSteps.add(new Position(x, i));
                     positions.add(new Position(x, i));
                 }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
+                }
                 break;
 
             }
@@ -116,6 +132,9 @@ public class Rook extends Piece{
                     positions.add(new Position(x, i));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
                 }
                 break;
             }
@@ -135,6 +154,9 @@ public class Rook extends Piece{
                     validSteps.add(new Position(x, i));
                     positions.add(new Position(x, i));
                 }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
+                }
                 break;
 
             }
@@ -147,6 +169,9 @@ public class Rook extends Piece{
                     positions.add(new Position(x, i));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
                 }
                 break;
 
@@ -192,9 +217,5 @@ public class Rook extends Piece{
 
         }
         return true;
-    }
-    @Override
-    public Vector<Position> getCheckingPositions() {
-        return checkingPositions;
     }
 }

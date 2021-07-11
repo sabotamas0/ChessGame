@@ -128,6 +128,7 @@ public class GameLogic implements ActionListener {
         }
         return detachable;
     }
+
     boolean isChecked(King king) {
         boolean isChecked=false;
         for(int i = 0;i < 8 && !isChecked;++i) {
@@ -174,6 +175,17 @@ public class GameLogic implements ActionListener {
             }
         }
         return neutralized;
+    }
+    int howManyPiecesOnBoard(){
+        int count=0;
+        for(int i = 0;i < 8;++i) {
+            for (int j = 0; j < 8; ++j) {
+                if(!mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)){
+                    ++count;
+                }
+            }
+        }
+        return count;
     }
     boolean isKingDefendable(King king){
         for(int i = 0;i < 8;++i) {
@@ -232,12 +244,26 @@ public class GameLogic implements ActionListener {
                 {
                     if(mBoard.whiteTurn){
                         if(mBoard.table.get(i).get(j).piece.getColor().equals(Color.black)){
-                            dangerousPositions.addAll(mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard,false));
+                            if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.PAWN))
+                            {
+                                Pawn pawn=(Pawn) mBoard.table.get(i).get(j).piece;
+                                dangerousPositions.addAll(pawn.getAvalaibleSteps(mBoard,false,true));
+                            }
+                            else
+                            {
+                                dangerousPositions.addAll(mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard,false));
+                            }
+
                         }
                     }
-                    else{
-                        if(mBoard.table.get(i).get(j).piece.getColor().equals(Color.white)){
-                            dangerousPositions.addAll(mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard,false));
+                    else {
+                        if (mBoard.table.get(i).get(j).piece.getColor().equals(Color.white)) {
+                            if (mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.PAWN)) {
+                                Pawn pawn = (Pawn) mBoard.table.get(i).get(j).piece;
+                                dangerousPositions.addAll(pawn.getAvalaibleSteps(mBoard, false, true));
+                            } else {
+                                dangerousPositions.addAll(mBoard.table.get(i).get(j).piece.getAvalaibleSteps(mBoard, false));
+                            }
                         }
                     }
                 }
@@ -267,15 +293,18 @@ public class GameLogic implements ActionListener {
         }
 
         if(kingIsStuck){
-            if(mBoard.whiteTurn && !isKingDefendable(wKing))
+            if(mBoard.whiteTurn && isChecked(wKing)&&!isKingDefendable(wKing))
             {
                 state=GLOBALSTATE.CHECKMATE;
             }
-            else if(!isKingDefendable(bKing) ){
+            else if(isChecked(bKing)&&!isKingDefendable(bKing) ){
                 state=GLOBALSTATE.CHECKMATE;
             }
             else if(isChecked(wKing) ||isChecked(bKing)){
                 state=GLOBALSTATE.CHECK;
+            }
+            else {
+                //vagy else if van vagy valami ami eldönti hogy ez most patt helyzet e
             }
             /*
             else if(!kingPositions.isEmpty()) {
@@ -330,7 +359,6 @@ public class GameLogic implements ActionListener {
     //BISHOP,KNIGHT,ROOK,KING,QUEEN
     @Override
     public void actionPerformed(ActionEvent e) {
-        //lépésellenrzés
         setBorderLightGray();
         boolean stepped=false;
         for(int i = 0;i< 8;++i) {

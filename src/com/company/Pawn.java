@@ -9,6 +9,7 @@ import java.util.Vector;
 
 public class Pawn extends Piece{
     boolean isFirstStepTwoStep;
+    Vector<Position> dangerousPositions;
     public Pawn(Color c){
         if(c.equals(Color.white)) {
             picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whitePawn.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
@@ -19,6 +20,7 @@ public class Pawn extends Piece{
         isFirstStep=true;
         type=PIECETYPE.PAWN;
         color=c;
+        dangerousPositions=new Vector<Position>();
     }
     void promotePawn(Position po,Board b){
         JPanel p=new JPanel();
@@ -116,10 +118,12 @@ public class Pawn extends Piece{
         });
 
     }
-    @Override
-    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
+
+    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean justDangerousPositions) {
         validSteps.clear();
         checkingPositions.clear();
+        allyPieces.clear();
+        dangerousPositions.clear();
         isChecking=false;
         if(getColor().equals(Color.WHITE)){
             Position pULeft=new Position(pos.x-1, pos.y-1);
@@ -139,30 +143,50 @@ public class Pawn extends Piece{
                         if(colorize) {
                             b.table.get(twoUp.y).get(twoUp.x).button.setBorder(new LineBorder(Color.GREEN));
                         }
-                        validSteps.add(twoUp);
+                        if(!justDangerousPositions)
+                        {
+                            validSteps.add(twoUp);
+                        }
+
                     }
                 }
                 if(b.table.get(pUp.y).get(pUp.x).piece.getType().equals(PIECETYPE.DEFAULT)) {
                     if(colorize) {
                         b.table.get(pUp.y).get(pUp.x).button.setBorder(new LineBorder(Color.GREEN));
                     }
-                    validSteps.add(pUp);
+                    if(!justDangerousPositions) {
+                        validSteps.add(pUp);
+                    }
                 }
                 if(pULeft.x >= 0 && pULeft.y>=0) {
+                    if(b.table.get(pULeft.y).get(pULeft.x).piece.getType().equals(PIECETYPE.DEFAULT) ||!b.table.get(pULeft.y).get(pULeft.x).piece.getType().equals(PIECETYPE.KING) && !b.table.get(pULeft.y).get(pULeft.x).piece.getColor().equals(getColor())){
+                        dangerousPositions.add(pULeft);
+                    }
                     if (!b.table.get(pULeft.y).get(pULeft.x).piece.getType().equals(PIECETYPE.DEFAULT)  && !b.table.get(pULeft.y).get(pULeft.x).piece.getType().equals(PIECETYPE.KING)) {
-                        if (!b.table.get(pULeft.y).get(pULeft.x).piece.getColor().equals(getColor())) {
+                        boolean isEnemy=!b.table.get(pULeft.y).get(pULeft.x).piece.getColor().equals(getColor());
+                        if (isEnemy) {
                             if(colorize) {
                                 b.table.get(pULeft.y).get(pULeft.x).button.setBorder(new LineBorder(Color.GREEN));
                             }
                             validSteps.add(pULeft);
                         }
+                        else{
+                            allyPieces.add( b.table.get(pULeft.y).get(pULeft.x).piece);
+                        }
                     }
                     else if (b.table.get(pULeft.y).get(pULeft.x).piece.getType().equals(PIECETYPE.KING)){
-                        King king=(King) b.table.get(pULeft.y).get(pULeft.x).piece;
-                        king.isChecked=true;
-                        isChecking=true;
-                        checkingPositions.add(pULeft);
+                        boolean isEnemy=!b.table.get(pULeft.y).get(pULeft.x).piece.getColor().equals(getColor());
+                        if(isEnemy) {
+                            King king = (King) b.table.get(pULeft.y).get(pULeft.x).piece;
+                            king.isChecked = true;
+                            isChecking = true;
+                            checkingPositions.add(pULeft);
+                        }
+                        else{
+                            allyPieces.add( b.table.get(pULeft.y).get(pULeft.x).piece);
+                        }
                     }
+
                 }
                 if(pEnPassantLeft.y==2 && pLeft.x >=0){
                     if (b.table.get(pLeft.y).get(pLeft.x).piece.getType().equals(PIECETYPE.PAWN)) {
@@ -193,19 +217,32 @@ public class Pawn extends Piece{
                     }
                 }
                 if(pURight.x < 8) {
+                    if(b.table.get(pURight.y).get(pURight.x).piece.getType().equals(PIECETYPE.DEFAULT) ||!b.table.get(pURight.y).get(pURight.x).piece.getType().equals(PIECETYPE.KING) && !b.table.get(pURight.y).get(pURight.x).piece.getColor().equals(getColor())){
+                        dangerousPositions.add(pURight);
+                    }
                     if (!b.table.get(pURight.y).get(pURight.x).piece.getType().equals(PIECETYPE.DEFAULT) && !b.table.get(pURight.y).get(pURight.x).piece.getType().equals(PIECETYPE.KING)) {
+                        boolean isEnemy=!b.table.get(pURight.y).get(pURight.x).piece.getColor().equals(getColor());
                         if (!b.table.get(pURight.y).get(pURight.x).piece.getColor().equals(getColor())) {
                             if(colorize) {
                                 b.table.get(pURight.y).get(pURight.x).button.setBorder(new LineBorder(Color.GREEN));
                             }
                             validSteps.add(pURight);
                         }
+                        else{
+                            allyPieces.add(b.table.get(pURight.y).get(pURight.x).piece);
+                        }
                     }
                     else if (b.table.get(pURight.y).get(pURight.x).piece.getType().equals(PIECETYPE.KING)){
-                        King king=(King) b.table.get(pURight.y).get(pURight.x).piece;
-                        king.isChecked=true;
-                        isChecking=true;
-                        checkingPositions.add(pURight);
+                        boolean isEnemy=!b.table.get(pURight.y).get(pURight.x).piece.getColor().equals(getColor());
+                        if(isEnemy) {
+                            King king = (King) b.table.get(pURight.y).get(pURight.x).piece;
+                            king.isChecked = true;
+                            isChecking = true;
+                            checkingPositions.add(pURight);
+                        }
+                        else{
+                            allyPieces.add( b.table.get(pURight.y).get(pURight.x).piece);
+                        }
                     }
                 }
             }
@@ -228,29 +265,46 @@ public class Pawn extends Piece{
                         if(colorize) {
                             b.table.get(twoDown.y).get(twoDown.x).button.setBorder(new LineBorder(Color.GREEN));
                         }
-                        validSteps.add(twoDown);
+                        if(!justDangerousPositions) {
+                            validSteps.add(twoDown);
+                        }
                     }
                 }
                 if(b.table.get(pDown.y).get(pDown.x).piece.getType().equals(PIECETYPE.DEFAULT)) {
                     if(colorize) {
                         b.table.get(pDown.y).get(pDown.x).button.setBorder(new LineBorder(Color.GREEN));
                     }
-                    validSteps.add(pDown);
+                    if(!justDangerousPositions) {
+                        validSteps.add(pDown);
+                    }
                 }
                 if (pDLeft.x>= 0) {
+                    if(b.table.get(pDLeft.y).get(pDLeft.x).piece.getType().equals(PIECETYPE.DEFAULT) ||!b.table.get(pDLeft.y).get(pDLeft.x).piece.getType().equals(PIECETYPE.KING) && !b.table.get(pDLeft.y).get(pDLeft.x).piece.getColor().equals(getColor())){
+                        dangerousPositions.add(pDLeft);
+                    }
                     if (!b.table.get(pDLeft.y).get(pDLeft.x).piece.getType().equals(PIECETYPE.DEFAULT)) {
-                        if (!b.table.get(pDLeft.y).get(pDLeft.x).piece.getColor().equals(getColor())) {
+                        boolean isEnemy=!b.table.get(pDLeft.y).get(pDLeft.x).piece.getColor().equals(getColor());
+                        if (isEnemy) {
                             if(colorize) {
                                 b.table.get(pDLeft.y).get(pDLeft.x).button.setBorder(new LineBorder(Color.GREEN));
                             }
                             validSteps.add(pDLeft);
                         }
+                        else{
+                            allyPieces.add( b.table.get(pDLeft.y).get(pDLeft.x).piece);
+                        }
                     }
                     else if (b.table.get(pDLeft.y).get(pDLeft.x).piece.getType().equals(PIECETYPE.KING)){
-                        King king=(King) b.table.get(pDLeft.y).get(pDLeft.x).piece;
-                        king.isChecked=true;
-                        isChecking=true;
-                        checkingPositions.add(pDLeft);
+                        boolean isEnemy=!b.table.get(pDLeft.y).get(pDLeft.x).piece.getColor().equals(getColor());
+                        if(isEnemy) {
+                            King king = (King) b.table.get(pDLeft.y).get(pDLeft.x).piece;
+                            king.isChecked = true;
+                            isChecking = true;
+                            checkingPositions.add(pDLeft);
+                        }
+                        else{
+                            allyPieces.add( b.table.get(pDLeft.y).get(pDLeft.x).piece);
+                        }
                     }
                 }
                 if(pEnPassantLeft.y==5 && pLeft.x>=0){
@@ -282,24 +336,45 @@ public class Pawn extends Piece{
                     }
                 }
                 if (pDRight.x < 8) {
+                    if(b.table.get(pDRight.y).get(pDRight.x).piece.getType().equals(PIECETYPE.DEFAULT) ||!b.table.get(pDRight.y).get(pDRight.x).piece.getType().equals(PIECETYPE.KING) && !b.table.get(pDRight.y).get(pDRight.x).piece.getColor().equals(getColor())){
+                        dangerousPositions.add(pDRight);
+                    }
                     if (!b.table.get(pDRight.y).get(pDRight.x).piece.getType().equals(PIECETYPE.DEFAULT)) {
-                        if (!b.table.get(pDRight.y).get(pDRight.x).piece.getColor().equals(getColor())) {
+                        boolean isEnemy=!b.table.get(pDRight.y).get(pDRight.x).piece.getColor().equals(getColor());
+                        if (isEnemy) {
                             if(colorize) {
                                 b.table.get(pDRight.y).get(pDRight.x).button.setBorder(new LineBorder(Color.GREEN));
                             }
                             validSteps.add(pDRight);
                         }
+                        else{
+                            allyPieces.add( b.table.get(pDRight.y).get(pDRight.x).piece);
+                        }
                     }
                     else if (b.table.get(pDRight.y).get(pDRight.x).piece.getType().equals(PIECETYPE.KING)){
-                        King king=(King) b.table.get(pDRight.y).get(pDRight.x).piece;
-                        king.isChecked=true;
-                        isChecking=true;
-                        checkingPositions.add(pDRight);
+                        boolean isEnemy=!b.table.get(pDRight.y).get(pDRight.x).piece.getColor().equals(getColor());
+                        if(isEnemy) {
+                            King king = (King) b.table.get(pDRight.y).get(pDRight.x).piece;
+                            king.isChecked = true;
+                            isChecking = true;
+                            checkingPositions.add(pDRight);
+                        }
+                        else{
+                            allyPieces.add(b.table.get(pDRight.y).get(pDRight.x).piece);
+                        }
                     }
                 }
             }
         }
         return validSteps;
+    }
+
+    @Override
+    public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
+        return getAvalaibleSteps(b,colorize,false);
+    }
+    public Vector<Position> getDangerousPositions() {
+        return dangerousPositions;
     }
     @Override
     public boolean step(Board b, Position p) {
@@ -313,7 +388,7 @@ public class Pawn extends Piece{
             b.table.get(p.y).get(p.x).piece=this;
             b.table.get(p.y).get(p.x).button.setIcon(this.picture);
             this.pos=p;
-            if(this.getColor().equals(Color.white)){
+            if(getColor().equals(Color.white)){
                 if(p.y==0){
                     promotePawn(p,b);
                 }
@@ -326,13 +401,14 @@ public class Pawn extends Piece{
                 if(p.y==7){
                     promotePawn(p,b);
                 }
-                if(this.pos.y==p.y && p.y==3 && isFirstStep){
+                if(pos.y==p.y && p.y==3 && isFirstStep){
                     isFirstStepTwoStep=true;
                 }
                 b.table.get(p.y-1).get(p.x).button.setIcon(null);
             }
             b.whiteTurn=!b.whiteTurn;
             isFirstStep=false;
+            isFirstStepTwoStep=false;
         }
         else if(!b.table.get(p.y).get(p.x).piece.getColor().equals(getColor())){
             if(!b.table.get(p.y).get(p.x).piece.getType().equals(PIECETYPE.KING)){
@@ -341,15 +417,22 @@ public class Pawn extends Piece{
                 b.table.get(p.y).get(p.x).button.setIcon(this.picture);
                 b.table.get(this.pos.y).get(this.pos.x).piece=new Piece();
                 this.pos=p;
+                if(getColor().equals(Color.white)){
+                    if(p.y==0){
+                        promotePawn(p,b);
+                    }
+                }
+                else{
+                    if(p.y==7){
+                        promotePawn(p,b);
+                    }
+                }
                 b.whiteTurn=!b.whiteTurn;
                 isFirstStep=false;
+                isFirstStepTwoStep=false;
             }
         }
         return true;
-    }
-    @Override
-    public Vector<Position> getCheckingPositions() {
-        return checkingPositions;
     }
 
 }
