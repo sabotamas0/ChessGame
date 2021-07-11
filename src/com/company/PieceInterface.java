@@ -10,6 +10,7 @@ public interface PieceInterface {
     Vector<Position> getAvalaibleSteps(Board b,boolean colorize);
     Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean callIsChecked);
     Vector<Position> getCheckingPositions();
+    Vector<Piece> getAllyPieces();
     boolean step(Board b,Position p);
     boolean isFirstStep();
 }

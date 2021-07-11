@@ -38,6 +38,9 @@ public class Queen extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -50,8 +53,12 @@ public class Queen extends Piece{
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
+
             validSteps.add(new Position(x, y));
             positions.add(new Position(x, y));
         }
@@ -71,6 +78,9 @@ public class Queen extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -82,6 +92,9 @@ public class Queen extends Piece{
                     positions.add(new Position(x, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
                 }
                 break;
             }
@@ -104,6 +117,9 @@ public class Queen extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -115,6 +131,9 @@ public class Queen extends Piece{
                     positions.add(new Position(x, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
                 }
                 break;
             }
@@ -137,6 +156,9 @@ public class Queen extends Piece{
                     validSteps.add(new Position(x, y));
                     positions.add(new Position(x, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             if(type.equals(PIECETYPE.KING)){
@@ -149,6 +171,9 @@ public class Queen extends Piece{
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(x).piece);
+                }
                 break;
             }
             validSteps.add(new Position(x, y));
@@ -157,7 +182,6 @@ public class Queen extends Piece{
         //a mi poziciónkból balra
         x=pos.x;
         y=pos.y;
-        positions.clear();
         for(int i = x;i>=0;--i) {
             if(x==i){
                 continue;
@@ -168,6 +192,9 @@ public class Queen extends Piece{
                 {
                     validSteps.add(new Position(i, y));
                     positions.add(new Position(i, y));
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
                 }
                 break;
 
@@ -181,6 +208,9 @@ public class Queen extends Piece{
                     positions.add(new Position(i, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
                 }
                 break;
 
@@ -204,6 +234,9 @@ public class Queen extends Piece{
                     validSteps.add(new Position(i, y));
                     positions.add(new Position(i, y));
                 }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
+                }
                 break;
             }
             if(b.table.get(y).get(i).piece.getType().equals(PIECETYPE.KING)) {
@@ -214,6 +247,9 @@ public class Queen extends Piece{
                     positions.add(new Position(i, y));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(y).get(i).piece);
                 }
                 break;
             }
@@ -233,6 +269,9 @@ public class Queen extends Piece{
                     validSteps.add(new Position(x, i));
                     positions.add(new Position(x, i));
                 }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
+                }
                 break;
 
             }
@@ -245,6 +284,9 @@ public class Queen extends Piece{
                     positions.add(new Position(x, i));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
                 }
                 break;
             }
@@ -264,6 +306,9 @@ public class Queen extends Piece{
                     validSteps.add(new Position(x, i));
                     positions.add(new Position(x, i));
                 }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
+                }
                 break;
 
             }
@@ -276,6 +321,9 @@ public class Queen extends Piece{
                     positions.add(new Position(x, i));
                     checkingPositions.addAll(positions);
                     //JOptionPane.showMessageDialog(b.panel,"Sakk");
+                }
+                else{
+                    allyPieces.add(b.table.get(i).get(x).piece);
                 }
                 break;
 
@@ -320,10 +368,6 @@ public class Queen extends Piece{
             }
         }
         return true;
-    }
-    @Override
-    public Vector<Position> getCheckingPositions() {
-        return checkingPositions;
     }
 }
 

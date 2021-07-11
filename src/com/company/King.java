@@ -40,6 +40,12 @@ public class King extends Piece{
                                 checked=true;
                             }
                         }
+                        else if (b.table.get(i).get(j).piece.getType().equals(PIECETYPE.PAWN)) {
+                            if(((Pawn)(b.table.get(i).get(j).piece)).getDangerousPositions().contains(pos))
+                            {
+                                checked=true;
+                            }
+                        }
                         else if (b.table.get(i).get(j).piece.getAvalaibleSteps(b, false).contains(pos)) {
                             PIECETYPE p = b.table.get(i).get(j).piece.getType();
                             checked=true;
@@ -51,6 +57,27 @@ public class King extends Piece{
 
         return checked;
     }
+    boolean isPieceDefended(Piece piece, Board b){
+        boolean defended=false;
+        for(int i = 0;i < 8 && !defended;++i) {
+            for (int j = 0; j < 8 && !defended; ++j) {
+                Piece currentPiece=b.table.get(i).get(j).piece;
+                if(!currentPiece.equals(piece) && !currentPiece.getType().equals(PIECETYPE.DEFAULT) && currentPiece.getColor().equals(piece.getColor())) {
+                    if (currentPiece.getType().equals(PIECETYPE.KING)) {
+                        if (((King) (currentPiece)).getAvalaibleSteps(b, false, false).contains(piece.pos)) {
+                            defended = true;
+                        }
+                    }
+                    else {
+                        currentPiece.getAvalaibleSteps(b,false);
+                        Vector<Piece> allyes=currentPiece.getAllyPieces();
+                        defended = allyes.contains(piece);
+                    }
+                }
+            }
+        }
+        return defended;
+    }
     @Override
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         return getAvalaibleSteps(b,colorize,true);
@@ -58,6 +85,7 @@ public class King extends Piece{
     @Override
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean callIsChecked){
         validSteps.clear();
+        allyPieces.clear();
         Position step;
         for(int i=pos.x-1;i<pos.x+2;++i){
             for(int j=pos.y-1;j<pos.y+2;++j){
@@ -69,17 +97,24 @@ public class King extends Piece{
                     }
                     boolean isEnemy = !other.equals(getColor());
                     step=new Position(i, j);
-                    if (type.equals(PIECETYPE.DEFAULT) || (!type.equals(PIECETYPE.KING) && isEnemy)){
+                    if (type.equals(PIECETYPE.DEFAULT)){
                         if(callIsChecked) {
                             if(!isPositionChecked(step,b)){
                                 validSteps.add(step);
                             }
-
                         }
                         else
                         {
                             validSteps.add(step);
                         }
+                    }
+                    else if(!type.equals(PIECETYPE.KING) && isEnemy){
+                        if(!isPieceDefended(b.table.get(j).get(i).piece,b)){
+                            validSteps.add(step);
+                        }
+                    }
+                    else if(!type.equals(PIECETYPE.DEFAULT) && !isEnemy){
+                        allyPieces.add(b.table.get(j).get(i).piece);
                     }
                 }
             }
@@ -209,9 +244,5 @@ public class King extends Piece{
             }
         }
         return true;
-    }
-    @Override
-    public Vector<Position> getCheckingPositions() {
-        return checkingPositions;
     }
 }
