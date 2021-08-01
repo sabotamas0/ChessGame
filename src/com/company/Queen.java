@@ -17,6 +17,17 @@ public class Queen extends Piece{
         type=PIECETYPE.QUEEN;
         color=c;
     }
+    public Queen(Queen other) {
+        this.picture = other.picture;
+        this.type = other.type;
+        this.color = other.color;
+        this.pos = new Position(other.pos);
+        this.validSteps = other.validSteps;
+        this.checkingPositions = other.checkingPositions;
+        this.allyPieces = other.allyPieces;
+        this.isChecking = other.isChecking;
+        this.isFirstStep = other.isFirstStep;
+    }
     @Override
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         validSteps.clear();
@@ -368,6 +379,10 @@ public class Queen extends Piece{
             }
         }
         return true;
+    }
+    @Override
+    public Piece clone() {
+        return new Queen(this);
     }
 }
 

@@ -18,6 +18,17 @@ public class Rook extends Piece{
         type=PIECETYPE.ROOK;
         color=c;
     }
+    public Rook(Rook other) {
+        this.picture = other.picture;
+        this.type = other.type;
+        this.color = other.color;
+        this.pos = new Position(other.pos);
+        this.validSteps = other.validSteps;
+        this.checkingPositions = other.checkingPositions;
+        this.allyPieces = other.allyPieces;
+        this.isChecking = other.isChecking;
+        this.isFirstStep = other.isFirstStep;
+    }
     @Override
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         validSteps.clear();
@@ -217,5 +228,9 @@ public class Rook extends Piece{
 
         }
         return true;
+    }
+    @Override
+    public Piece clone() {
+        return new Rook(this);
     }
 }

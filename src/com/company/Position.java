@@ -7,6 +7,13 @@ public class Position {
         this.x=pX;
         this.y=pY;
     }
+    public Position(Position position){
+        if(position!=null)
+        {
+            this.x=position.x;
+            this.y=position.y;
+        }
+    }
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof Position)) {
