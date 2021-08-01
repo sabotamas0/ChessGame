@@ -10,23 +10,25 @@ import java.util.Vector;
 import com.company.PIECETYPE;
 public class GameLogic implements ActionListener {
     Board mBoard;
-    enum GLOBALSTATE{CHECK,STALEMATE,DEFAULT,CHECKMATE};
+    enum GLOBALSTATE{CHECK,STALEMATE,DEFAULT,CHECKMATE,INVALIDSTEP};
     //int prevPosX=-1;
     //int prevPosY=-1;
     public Position previousStep;
     Position previousPosition;
+    Vector<Piece> previousTableState;
     public GameLogic(Board b){
         mBoard=b;
         mBoard.addActionListener(this);
         previousPosition=new Position(-1,-1);
-        /*
-        Pawn p=new Pawn();
-        p.picture = new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whitePawn.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
-        p.color=Color.WHITE;
-        p.pos=new Position(1,6);
-        mBoard.table.get(p.pos.y).get(p.pos.x).button.setIcon(p.picture);
-        mBoard.table.get(p.pos.y).get(p.pos.x).piece=p;
-         */
+        createDefaultGame();
+        //createKingQueen();
+    }
+    public void pawnCreator(Pawn pawn,Position p){
+        pawn.pos=p;
+        mBoard.table.get(pawn.pos.y).get(pawn.pos.x).button.setIcon(pawn.picture);
+        mBoard.table.get(pawn.pos.y).get(pawn.pos.x).piece=pawn;
+    }
+    void createDefaultGame(){
         //PARASZTOK
         //feher
 
@@ -85,24 +87,21 @@ public class GameLogic implements ActionListener {
 
         knightCreator(new Knight(Color.black),new Position(1,0));
         knightCreator(new Knight(Color.black),new Position(6,0));
-        //pawnCreator(new Pawn(Color.black),new Position(6,3));
-
-
-
-
-
-
-
-       // knightCreator(new Knight(Color.white),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteKnight.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(4,4));
-        //bishopCreator(new Bishop(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteBishop.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(3,3));
-        //queenCreator(new Queen(),new ImageIcon(new ImageIcon("C:\\Users\\asd\\Desktop\\ChessGame\\images\\whiteQueen.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)),Color.WHITE,new Position(2,3));
     }
-    public void pawnCreator(Pawn pawn,Position p){
-        pawn.pos=p;
-        mBoard.table.get(pawn.pos.y).get(pawn.pos.x).button.setIcon(pawn.picture);
-        mBoard.table.get(pawn.pos.y).get(pawn.pos.x).piece=pawn;
-    }
+    void createKingQueen(){
 
+        //feher
+        kingCreator(new King(Color.white),new Position(4,7));
+
+        //fekete
+        kingCreator(new King(Color.black),new Position(4,0));
+        //királyok
+        //feher
+
+        queenCreator(new Queen(Color.white),new Position(3,7));
+        //fekete
+        queenCreator(new Queen(Color.black),new Position(3,0));
+    }
     public void setKingCheckedFalse()
     {
         for(int i = 0;i < 8;++i) {
@@ -133,27 +132,36 @@ public class GameLogic implements ActionListener {
         boolean isChecked=false;
         for(int i = 0;i < 8 && !isChecked;++i) {
             for (int j = 0; j < 8 && !isChecked; ++j) {
-                if(!king.getColor().equals(mBoard.table.get(i).get(j).piece.getColor()) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KING) &&mBoard.table.get(i).get(j).piece.isChecking) {
+                if(!king.getColor().equals(mBoard.table.get(i).get(j).piece.getColor()) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT) && !mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KING) ) {
                     Vector<Position> pieceCheckingPositions=new Vector<Position>();
                     if (mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.QUEEN)) {
                         Queen q= (Queen)mBoard.table.get(i).get(j).piece;
+                        q.getAvalaibleSteps(mBoard,false);
                         pieceCheckingPositions = q.getCheckingPositions();
                     }
                     else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.BISHOP))
                     {
-                        pieceCheckingPositions = ((Bishop) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                        Bishop b =((Bishop) (mBoard.table.get(i).get(j).piece));
+                        b.getAvalaibleSteps(mBoard,false);
+                        pieceCheckingPositions = b.getCheckingPositions();
                     }
                     else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.PAWN))
                     {
-                        pieceCheckingPositions = ((Pawn) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                        Pawn p=((Pawn) (mBoard.table.get(i).get(j).piece));
+                        p.getAvalaibleSteps(mBoard,false,true);
+                        pieceCheckingPositions = p.getCheckingPositions();
                     }
                     else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.KNIGHT))
                     {
-                        pieceCheckingPositions = ((Knight) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                        Knight k =((Knight) (mBoard.table.get(i).get(j).piece));
+                        k.getAvalaibleSteps(mBoard,false);
+                        pieceCheckingPositions = k.getCheckingPositions();
                     }
                     else if(mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.ROOK))
                     {
-                        pieceCheckingPositions = ((Rook) (mBoard.table.get(i).get(j).piece)).getCheckingPositions();
+                        Rook r = ((Rook) (mBoard.table.get(i).get(j).piece));
+                        r.getAvalaibleSteps(mBoard,false);
+                        pieceCheckingPositions = r.getCheckingPositions();
                     }
                     isChecked = pieceCheckingPositions.contains(king.pos);
                 }
@@ -187,6 +195,17 @@ public class GameLogic implements ActionListener {
         }
         return count;
     }
+    boolean isTwoKingLeft() {
+        int count=0;
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                if (!mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)) {
+                    ++count;
+                }
+            }
+        }
+        return count==2;
+    }
     boolean isKingDefendable(King king){
         for(int i = 0;i < 8;++i) {
             for (int j = 0; j < 8; ++j) {
@@ -209,6 +228,9 @@ public class GameLogic implements ActionListener {
         return false;
     }
     GLOBALSTATE getGameState(){
+        if(isTwoKingLeft()){
+            return GLOBALSTATE.STALEMATE;
+        }
         Vector<Position> dangerousPositions= new Vector<Position>();
         Vector<Position> kingPositions= new Vector<Position>();
         King wKing=new King(Color.white);
@@ -273,19 +295,24 @@ public class GameLogic implements ActionListener {
         boolean isCheck=false;
         //annak az állapotnak nem kéne fennálni hogy a másik ragad be és az aktuális király van sakkban
         //todo ezt szépen megírni.
-        if(mBoard.whiteTurn)
+
+        if(!mBoard.whiteTurn)
         {
-            isCheck=wKing.isChecked || bKing.isChecked;
+            if(isChecked(wKing)){
+                return GLOBALSTATE.INVALIDSTEP;
+            }
         }
         else
         {
-            isCheck=bKing.isChecked || wKing.isChecked;
+            if(isChecked(bKing)){
+                return GLOBALSTATE.INVALIDSTEP;
+            }
         }
         boolean kingIsStuck=false;
         if(kingPositions.isEmpty())
         {
             //TODO
-            //kingIsStuck=true;
+            kingIsStuck=true;
         }
         else if (dangerousPositions.containsAll(kingPositions))
         {
@@ -293,6 +320,55 @@ public class GameLogic implements ActionListener {
         }
 
         if(kingIsStuck){
+            if(mBoard.whiteTurn){
+                if(isChecked(wKing)){
+                    if(isKingDefendable(wKing)){
+                        state=GLOBALSTATE.CHECK;
+                    }
+                    else{
+                        state=GLOBALSTATE.CHECKMATE;
+                    }
+                }
+                else{
+                    boolean found=wKing.dangerousPositions.isEmpty();
+                    for(int i=0;i<wKing.dangerousPositions.size() && !found;++i){
+                        if(isPieceDetachable(wKing.dangerousPositions.get(i).piece)){
+                            found=true;
+                        }
+                    }
+                    if(found){
+                        state=GLOBALSTATE.DEFAULT;
+                    }
+                    else{
+                        state=GLOBALSTATE.STALEMATE;
+                    }
+                }
+            }
+            else{
+                if(isChecked(bKing)){
+                    if(isKingDefendable(bKing)){
+                        state=GLOBALSTATE.CHECK;
+                    }
+                    else{
+                        state=GLOBALSTATE.CHECKMATE;
+                    }
+                }
+                else{
+                    boolean found=bKing.dangerousPositions.isEmpty();
+                    for(int i=0;i<bKing.dangerousPositions.size() && !found;++i){
+                        if(isPieceDetachable(bKing.dangerousPositions.get(i).piece)){
+                            found=true;
+                        }
+                    }
+                    if(found){
+                        state=GLOBALSTATE.DEFAULT;
+                    }
+                    else{
+                        state=GLOBALSTATE.STALEMATE;
+                    }
+                }
+            }
+            /*
             if(mBoard.whiteTurn && isChecked(wKing)&&!isKingDefendable(wKing))
             {
                 state=GLOBALSTATE.CHECKMATE;
@@ -306,6 +382,7 @@ public class GameLogic implements ActionListener {
             else {
                 //vagy else if van vagy valami ami eldönti hogy ez most patt helyzet e
             }
+            */
             /*
             else if(!kingPositions.isEmpty()) {
                 state = GLOBALSTATE.STALEMATE;
@@ -313,6 +390,7 @@ public class GameLogic implements ActionListener {
             */
         }
         else{
+
             if(isChecked(wKing) ||isChecked(bKing)){
                 state=GLOBALSTATE.CHECK;
             }
@@ -360,10 +438,11 @@ public class GameLogic implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         setBorderLightGray();
+        previousTableState=mBoard.getPieces();
         boolean stepped=false;
         for(int i = 0;i< 8;++i) {
             for (int j = 0; j < 8; ++j) {
-                if (e.getSource() == mBoard.table.get(i).get(j).button /*&& mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)*/) {
+                if (e.getSource() == mBoard.table.get(i).get(j).button /*&& mBoard.table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)*/&&mBoard.table.get(i).get(j).piece!=null) {
                     if (previousPosition.y != -1 && (previousPosition.y != i || previousPosition.x != j)) {
                         if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.ROOK)) {
                             Rook rook = (Rook) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
@@ -450,13 +529,11 @@ public class GameLogic implements ActionListener {
 
 
 
-        if(previousStep != null) {
-            mBoard.table.get(previousStep.y).get(previousStep.x).button.setBorder(new LineBorder(Color.CYAN));
-        }
+
         boolean detected=false;
         for(int i = 0;i< 8 && !detected;++i) {
             for (int j = 0; j < 8&& !detected; ++j) {
-                if(e.getSource()==mBoard.table.get(i).get(j).button){
+                if(e.getSource()==mBoard.table.get(i).get(j).button&&mBoard.table.get(i).get(j).piece!=null){
                     if(PIECETYPE.PAWN.equals(mBoard.table.get(i).get(j).piece.getType())){
                         Pawn pawn = (Pawn)mBoard.table.get(i).get(j).piece;
                         pawn.getAvalaibleSteps(mBoard,true);
@@ -509,11 +586,32 @@ public class GameLogic implements ActionListener {
             GLOBALSTATE state =getGameState();
             switch (state){
                 case CHECK -> JOptionPane.showMessageDialog(mBoard.panel,"Sakk");
-
-                case CHECKMATE -> JOptionPane.showMessageDialog(mBoard.panel,"SakkMatt");
-                case STALEMATE -> JOptionPane.showMessageDialog(mBoard.panel,"Dontetlen");
+                case CHECKMATE -> {
+                    JOptionPane.showMessageDialog(mBoard.panel, "SakkMatt");
+                    mBoard.setPieces(new Vector<Piece>());
+                    setBorderLightGray();
+                    stepped=false;
+                    createDefaultGame();
+                }
+                case STALEMATE -> {
+                    JOptionPane.showMessageDialog(mBoard.panel, "Dontetlen");
+                    mBoard.setPieces(new Vector<Piece>());
+                    setBorderLightGray();
+                    stepped=false;
+                    createDefaultGame();
+                }
+                case INVALIDSTEP -> {
+                    mBoard.setPieces(previousTableState);
+                    mBoard.whiteTurn=!mBoard.whiteTurn;
+                    stepped=false;
+                    setBorderLightGray();
+                    JOptionPane.showMessageDialog(mBoard.panel,"Invalid lepes");
+                }
             }
             //mBoard.whiteTurn=!mBoard.whiteTurn;
+        }
+        if(previousStep != null && stepped) {
+            mBoard.table.get(previousStep.y).get(previousStep.x).button.setBorder(new LineBorder(Color.CYAN));
         }
         if(detected)
         {
@@ -532,7 +630,7 @@ public class GameLogic implements ActionListener {
             }
         }
 
-        if(previousStep != null) {
+        if(previousStep != null && stepped) {
             mBoard.table.get(previousStep.y).get(previousStep.x).button.setBorder(new LineBorder(Color.CYAN));
         }
 

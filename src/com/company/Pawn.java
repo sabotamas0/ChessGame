@@ -22,6 +22,19 @@ public class Pawn extends Piece{
         color=c;
         dangerousPositions=new Vector<Position>();
     }
+    public Pawn(Pawn pawn) {
+        this.picture = pawn.picture;
+        this.type = pawn.type;
+        this.color = pawn.color;
+        this.pos = new Position(pawn.pos);
+        this.validSteps = pawn.validSteps;
+        this.checkingPositions = pawn.checkingPositions;
+        this.allyPieces = pawn.allyPieces;
+        this.isChecking = pawn.isChecking;
+        this.isFirstStep = pawn.isFirstStep;
+        this.dangerousPositions = pawn.dangerousPositions;
+        this.isFirstStepTwoStep = pawn.isFirstStepTwoStep;
+    }
     void promotePawn(Position po,Board b){
         JPanel p=new JPanel();
         p.setLayout(new GridLayout(2,2));
@@ -434,5 +447,8 @@ public class Pawn extends Piece{
         }
         return true;
     }
-
+    @Override
+    public Piece clone() {
+        return new Pawn(this);
+    }
 }

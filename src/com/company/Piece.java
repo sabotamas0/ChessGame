@@ -19,6 +19,18 @@ public class Piece implements PieceInterface {
         validSteps=new Vector<Position>();
         checkingPositions=new Vector<Position>();
         allyPieces=new Vector<Piece>();
+
+    }
+    public Piece(Piece other) {
+        this.picture = other.picture;
+        this.type = other.type;
+        this.color = other.color;
+        this.pos = new Position(other.pos);
+        this.validSteps = other.validSteps;
+        this.checkingPositions = other.checkingPositions;
+        this.allyPieces = other.allyPieces;
+        this.isChecking = other.isChecking;
+        this.isFirstStep = other.isFirstStep;
     }
     //TODO le lehessen kérdezni hogy default e
     @Override
@@ -49,6 +61,11 @@ public class Piece implements PieceInterface {
     @Override
     public Vector<Piece> getAllyPieces() {
         return allyPieces;
+    }
+
+    @Override
+    public Piece clone() {
+        return new Piece(this);
     }
 
     @Override

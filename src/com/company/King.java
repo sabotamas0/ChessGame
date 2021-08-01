@@ -12,7 +12,7 @@ import javax.swing.JComponent;
 
 public class King extends Piece{
     boolean isChecked;
-    Vector<Position> dangerousPositions;
+    Vector<DangerousPieceWithPosition> dangerousPositions;
     public King(Color c){
         if(c.equals(Color.white)) {
             picture = new ImageIcon(new ImageIcon("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\images\\whiteKing.png").getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT));
@@ -22,7 +22,20 @@ public class King extends Piece{
         }
         type=PIECETYPE.KING;
         color=c;
-        dangerousPositions=new Vector<Position>();
+        dangerousPositions=new Vector<DangerousPieceWithPosition>();
+    }
+    public King(King king) {
+        this.picture = king.picture;
+        this.type = king.type;
+        this.color = king.color;
+        this.pos = new Position(king.pos);
+        this.validSteps = king.validSteps;
+        this.checkingPositions = king.checkingPositions;
+        this.allyPieces = king.allyPieces;
+        this.isChecking = king.isChecking;
+        this.isFirstStep = king.isFirstStep;
+        this.dangerousPositions = king.dangerousPositions;
+        this.isChecked = king.isChecked;
     }
     /*
     a valid stepsben ellenőrizni kell azt hogy az adott pocícióra lépéssel sakkba kerül e az én királyom,
@@ -86,6 +99,7 @@ public class King extends Piece{
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean callIsChecked){
         validSteps.clear();
         allyPieces.clear();
+        dangerousPositions.clear();
         Position step;
         for(int i=pos.x-1;i<pos.x+2;++i){
             for(int j=pos.y-1;j<pos.y+2;++j){
@@ -101,6 +115,9 @@ public class King extends Piece{
                         if(callIsChecked) {
                             if(!isPositionChecked(step,b)){
                                 validSteps.add(step);
+                            }
+                            else{
+                                dangerousPositions.add(new DangerousPieceWithPosition(b.table.get(j).get(i).piece,step));
                             }
                         }
                         else
@@ -244,5 +261,9 @@ public class King extends Piece{
             }
         }
         return true;
+    }
+    @Override
+    public Piece clone() {
+        return new King(this);
     }
 }

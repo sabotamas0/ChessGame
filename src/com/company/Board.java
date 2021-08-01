@@ -1,5 +1,6 @@
 package com.company;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.event.*;
 import java.awt.*;
 import java.util.Vector;
@@ -9,6 +10,7 @@ public class Board extends JFrame {
     //Vector<CheckingPiece> potentialCheckingPieces;
     public JPanel panel;
     Vector<Vector<ButtonWithPiece>> table;
+
     public boolean whiteTurn;
     public Board(){
 
@@ -38,7 +40,45 @@ public class Board extends JFrame {
 
         this.setContentPane(panel);
     }
+    Vector<Piece> getPieces(){
+        Vector<Piece> pieces=new Vector<Piece>();
+        for(int i = 0;i< 8;++i){
+            for(int j = 0;j< 8;++j){
+                //if(!table.get(i).get(j).piece.getType().equals(PIECETYPE.DEFAULT)){
+                if(table.get(i).get(j).piece!=null)
+                {
+                    pieces.add(table.get(i).get(j).piece.clone());
+                }
+            }
+        }
+        return pieces;
+    }
+    void setPieces(Vector<Piece> pieces){
+        for(int i = 0;i< 8;++i) {
+            for (int j = 0; j < 8; ++j) {
+                table.get(i).get(j).piece=null;
+                table.get(i).get(j).button.setIcon(null);
+            }
+        }
+        for(int i=0;i<pieces.size();++i){
+            Position p =pieces.get(i).pos;
+            if(p.x!=-1)
+            {
+                table.get(p.y).get(p.x).piece=pieces.get(i);
+                table.get(p.y).get(p.x).button.setIcon(table.get(p.y).get(p.x).piece.picture);
+            }
 
+        }
+        for(int i = 0;i< 8;++i) {
+            for (int j = 0; j < 8; ++j) {
+                if(table.get(i).get(j).piece==null)
+                {
+                    table.get(i).get(j).piece=new Piece();
+                    table.get(i).get(j).button.setIcon(null);
+                }
+            }
+        }
+    }
     void fillColor(){
         boolean white=true;
         Color color;

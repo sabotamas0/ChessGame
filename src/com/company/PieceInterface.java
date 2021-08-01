@@ -11,6 +11,7 @@ public interface PieceInterface {
     Vector<Position> getAvalaibleSteps(Board b,boolean colorize,boolean callIsChecked);
     Vector<Position> getCheckingPositions();
     Vector<Piece> getAllyPieces();
+    Piece clone();
     boolean step(Board b,Position p);
     boolean isFirstStep();
 }

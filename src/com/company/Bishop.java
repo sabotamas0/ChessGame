@@ -16,6 +16,17 @@ public class Bishop extends Piece{
         type=PIECETYPE.BISHOP;
         color=c;
     }
+    public Bishop(Bishop bishop) {
+        this.picture = bishop.picture;
+        this.type = bishop.type;
+        this.color = bishop.color;
+        this.pos = new Position(bishop.pos);
+        this.validSteps = bishop.validSteps;
+        this.checkingPositions = bishop.checkingPositions;
+        this.allyPieces = bishop.allyPieces;
+        this.isChecking = bishop.isChecking;
+        this.isFirstStep = bishop.isFirstStep;
+    }
     @Override
     public Vector<Position> getAvalaibleSteps(Board b,boolean colorize) {
         validSteps.clear();
@@ -217,5 +228,9 @@ public class Bishop extends Piece{
 
         }
         return true;
+    }
+    @Override
+    public Piece clone() {
+        return new Bishop(this);
     }
 }
