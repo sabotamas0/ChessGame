@@ -4,12 +4,23 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.event.*;
 import java.awt.*;
+import java.io.*;
 import java.util.Stack;
 import java.util.Vector;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import java.io.IOException;  // Import the IOException class to handle errors
+import java.io.File;  // Import the File class
+import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.util.Scanner; // Import the Scanner class to read text files
+
+import java.io.IOException;
 
 import com.company.PIECETYPE;
-public class GameLogic implements ActionListener {
+public class GameLogic implements ActionListener{
     Board mBoard;
+    boolean flag;
     enum GLOBALSTATE{CHECK,STALEMATE,DEFAULT,CHECKMATE,INVALIDSTEP};
     //int prevPosX=-1;
     //int prevPosY=-1;
@@ -29,6 +40,13 @@ public class GameLogic implements ActionListener {
         mBoard.table.get(pawn.pos.y).get(pawn.pos.x).piece=pawn;
     }
     void createDefaultGame(){
+        for(int i = 0 ;i<8;++i){
+            for(int j=0;j<8;++j){
+                mBoard.table.get(i).get(j).piece.type=PIECETYPE.DEFAULT;
+                mBoard.table.get(i).get(j).button.setIcon(null);
+                mBoard.whiteTurn=true;
+            }
+        }
         //PARASZTOK
         //feher
 
@@ -87,7 +105,10 @@ public class GameLogic implements ActionListener {
 
         knightCreator(new Knight(Color.black),new Position(1,0));
         knightCreator(new Knight(Color.black),new Position(6,0));
+
+
     }
+
     void createKingQueen(){
 
         //feher
@@ -435,8 +456,17 @@ public class GameLogic implements ActionListener {
         }
     }
     //BISHOP,KNIGHT,ROOK,KING,QUEEN
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(e.getSource().equals(mBoard.visszaTolt)){
+            visszaToltFajlbolTablat();
+
+        }
+        if(e.getSource().equals(mBoard.reset)){
+            createDefaultGame();
+            beleirTablaEsFelulIr();
+        }
         setBorderLightGray();
         previousTableState=mBoard.getPieces();
         boolean stepped=false;
@@ -450,6 +480,7 @@ public class GameLogic implements ActionListener {
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped=rook.step(mBoard, new Position(j, i))) {
+                                        beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
                                     break;
@@ -462,7 +493,8 @@ public class GameLogic implements ActionListener {
                             for (Position p : king.validSteps) {
                                 if (p.x == j && p.y == i) {
                                     if(stepped=king.step(mBoard, new Position(j, i))) {
-                                       previousStep = new Position(j, i);
+                                        beleirTablaEsFelulIr();
+                                        previousStep = new Position(j, i);
                                     }
                                     break;
                                 }
@@ -475,11 +507,13 @@ public class GameLogic implements ActionListener {
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped= pawn.step(mBoard, new Position(j, i))) {
+                                        beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
                                     break;
                                 }
                             }
+
                         }
                         if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.BISHOP)) {
                             Bishop bishop = (Bishop) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
@@ -487,6 +521,7 @@ public class GameLogic implements ActionListener {
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped=bishop.step(mBoard, new Position(j, i))) {
+                                        beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
                                     break;
@@ -499,6 +534,7 @@ public class GameLogic implements ActionListener {
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped= queen.step(mBoard, new Position(j, i))) {
+                                        beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
                                     break;
@@ -511,6 +547,7 @@ public class GameLogic implements ActionListener {
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped=knight.step(mBoard, new Position(j, i))) {
+                                        beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
                                     break;
@@ -518,12 +555,14 @@ public class GameLogic implements ActionListener {
                             }
 
                         }
+
                         previousPosition.x = j;
                         previousPosition.y = i;
                     }
                 }
             }
         }
+
 
 
 
@@ -634,5 +673,132 @@ public class GameLogic implements ActionListener {
             mBoard.table.get(previousStep.y).get(previousStep.x).button.setBorder(new LineBorder(Color.CYAN));
         }
 
+    }
+    void beleirTablaEsFelulIr(){//egesz tablat kiirja es mindig felulirja es ezt toltom vissza
+        try {
+            FileWriter myWriter = new FileWriter("filename.txt");
+            myWriter.write(mBoard.whiteTurn+ "\n");
+            for(int i=0;i<mBoard.table.size();++i) {
+                for (int j = 0; j < mBoard.table.get(i).size(); ++j) {
+                    if(mBoard.table.get(i).get(j).piece.getColor()!=null && mBoard.table.get(i).get(j).piece.getType()!=PIECETYPE.DEFAULT) {
+                        myWriter.write(mBoard.table.get(i).get(j).piece.getType().toString() + "," + "#" + Integer.toHexString(mBoard.table.get(i).get(j).piece.getColor().getRGB()).substring(2).toUpperCase() + "," + mBoard.table.get(i).get(j).piece.pos.x + "," + mBoard.table.get(i).get(j).piece.pos.y + "\n");
+                    }
+                }
+            }
+
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+    Vector<String> visszaAdFajltartalom(){
+        Vector<String> tartalom=new Vector<>();
+        try {
+            File myObj = new File("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\filename.txt");
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                tartalom.add(data);
+            }
+            myReader.close();
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        return tartalom;
+    }
+    void visszaToltFajlbolTablat(){
+        mBoard.setPieces(new Vector<Piece>());
+        Vector<String> fajltartalma= visszaAdFajltartalom();
+        Vector<Piece> reloadedPieces=new Vector<>();
+        mBoard.whiteTurn= Boolean.parseBoolean(fajltartalma.get(0));
+        for(int i = 1;i<fajltartalma.size();++i){
+
+            String[] arrOfStr = fajltartalma.get(i).split(",");
+            for(int j = 0;j<arrOfStr.length;++j){
+                switch (arrOfStr[0]) {
+                    case "PAWN" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Pawn pawn=new Pawn(Color.white);
+                            pawn.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(pawn);
+                        }
+                        else {
+                            Pawn pawn=new Pawn(Color.black);
+                            pawn.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(pawn);
+                        }
+                    }
+                    case "ROOK" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Rook rook=new Rook(Color.white);
+                            rook.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(rook);
+                        }
+                        else {
+                            Rook rook=new Rook(Color.black);
+                            rook.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(rook);
+                        }
+                    }
+                    case "KNIGHT" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Knight knight=new Knight(Color.white);
+                            knight.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(knight);
+                        }
+                        else {
+                            Knight knight=new Knight(Color.black);
+                            knight.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(knight);
+                        }
+                    }
+                    case "BISHOP" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Bishop bishop = new Bishop(Color.white);
+                            bishop.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(bishop);
+                        }
+                        else {
+                            Bishop bishop = new Bishop(Color.black);
+                            bishop.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(bishop);
+                        }
+                    }
+                    case "QUEEN" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Queen queen = new Queen(Color.white);
+                            queen.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(queen);
+                        }
+                        else {
+                            Queen queen = new Queen(Color.black);
+                            queen.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(queen);
+                        }
+                    }
+                    case "KING" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            King king = new King(Color.white);
+                            king.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(king);
+                        }
+                        else {
+                            King king = new King(Color.black);
+                            king.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(king);
+                        }
+                    }
+                }
+            }
+        }
+        for(int i=0;i<reloadedPieces.size();++i){
+            Position p =reloadedPieces.get(i).pos;
+            mBoard.table.get(p.y).get(p.x).piece=reloadedPieces.get(i);
+            mBoard.table.get(p.y).get(p.x).button.setIcon(mBoard.table.get(p.y).get(p.x).piece.picture);
+        }
     }
 }
