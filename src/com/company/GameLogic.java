@@ -2,6 +2,8 @@ package com.company;
 import com.company.Board;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
@@ -20,7 +22,10 @@ import java.io.IOException;
 import com.company.PIECETYPE;
 public class GameLogic implements ActionListener{
     Board mBoard;
+    JPanel p;
+    JFrame f=new JFrame();
     boolean flag;
+    int szam=fajldarabVisszaAd();
     enum GLOBALSTATE{CHECK,STALEMATE,DEFAULT,CHECKMATE,INVALIDSTEP};
     //int prevPosX=-1;
     //int prevPosY=-1;
@@ -40,6 +45,7 @@ public class GameLogic implements ActionListener{
         mBoard.table.get(pawn.pos.y).get(pawn.pos.x).piece=pawn;
     }
     void createDefaultGame(){
+
         for(int i = 0 ;i<8;++i){
             for(int j=0;j<8;++j){
                 mBoard.table.get(i).get(j).piece.type=PIECETYPE.DEFAULT;
@@ -105,8 +111,6 @@ public class GameLogic implements ActionListener{
 
         knightCreator(new Knight(Color.black),new Position(1,0));
         knightCreator(new Knight(Color.black),new Position(6,0));
-
-
     }
 
     void createKingQueen(){
@@ -456,16 +460,47 @@ public class GameLogic implements ActionListener{
         }
     }
     //BISHOP,KNIGHT,ROOK,KING,QUEEN
-
+    public JSlider letrehozzSlider(int szam){
+        JSlider slider = new JSlider(JSlider.HORIZONTAL);
+        slider.setMinorTickSpacing(1);
+        slider.setMaximum(szam);
+        slider.setPaintTicks(true);
+        f=new JFrame();
+        p=new JPanel();
+        p.add(slider);
+        f.add(p);
+        f.setVisible(true);
+        f.setContentPane(p);
+        f.setSize(500,150);
+        return slider;
+    }
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource().equals(mBoard.visszaTolt)){
             visszaToltFajlbolTablat();
-
+            flag=true;
+        }
+        if(e.getSource().equals(mBoard.replayStep)){
+            JSlider slider =letrehozzSlider(fajldarabVisszaAd());
+            slider.setMinimum(0);
+            if(fajldarabVisszaAd()!=0) {
+                slider.addChangeListener(e1 -> {
+                    slider.setMaximum(fajldarabVisszaAd());
+                    slider.repaint();
+                    replayForward(slider.getValue(),slider);
+                });
+            }
+            else{
+                f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+            }
         }
         if(e.getSource().equals(mBoard.reset)){
             createDefaultGame();
+            f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+            szam=0;
             beleirTablaEsFelulIr();
+            torolLepesFajlokatEsNullazSzamokat();
+            letrehozzNullasFajlt();
         }
         setBorderLightGray();
         previousTableState=mBoard.getPieces();
@@ -480,6 +515,9 @@ public class GameLogic implements ActionListener{
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped=rook.step(mBoard, new Position(j, i))) {
+                                        ++szam;
+                                        beleirFajlDb(szam);
+                                        beleirTablat(szam);
                                         beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
@@ -493,13 +531,15 @@ public class GameLogic implements ActionListener{
                             for (Position p : king.validSteps) {
                                 if (p.x == j && p.y == i) {
                                     if(stepped=king.step(mBoard, new Position(j, i))) {
+                                        ++szam;
+                                        beleirFajlDb(szam);
+                                        beleirTablat(szam);
                                         beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
                                     break;
                                 }
                             }
-
                         }
                         if (mBoard.table.get(previousPosition.y).get(previousPosition.x).piece.getType().equals(PIECETYPE.PAWN)) {
                             Pawn pawn = (Pawn) mBoard.table.get(previousPosition.y).get(previousPosition.x).piece;
@@ -507,6 +547,9 @@ public class GameLogic implements ActionListener{
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped= pawn.step(mBoard, new Position(j, i))) {
+                                        ++szam;
+                                        beleirFajlDb(szam);
+                                        beleirTablat(szam);
                                         beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
@@ -521,6 +564,9 @@ public class GameLogic implements ActionListener{
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped=bishop.step(mBoard, new Position(j, i))) {
+                                        ++szam;
+                                        beleirFajlDb(szam);
+                                        beleirTablat(szam);
                                         beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
@@ -534,6 +580,9 @@ public class GameLogic implements ActionListener{
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped= queen.step(mBoard, new Position(j, i))) {
+                                        ++szam;
+                                        beleirFajlDb(szam);
+                                        beleirTablat(szam);
                                         beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
@@ -547,6 +596,9 @@ public class GameLogic implements ActionListener{
                                 if (p.x == j && p.y == i) {
                                     setKingCheckedFalse();
                                     if(stepped=knight.step(mBoard, new Position(j, i))) {
+                                        ++szam;
+                                        beleirFajlDb(szam);
+                                        beleirTablat(szam);
                                         beleirTablaEsFelulIr();
                                         previousStep = new Position(j, i);
                                     }
@@ -626,6 +678,7 @@ public class GameLogic implements ActionListener{
             switch (state){
                 case CHECK -> JOptionPane.showMessageDialog(mBoard.panel,"Sakk");
                 case CHECKMATE -> {
+
                     JOptionPane.showMessageDialog(mBoard.panel, "SakkMatt");
                     mBoard.setPieces(new Vector<Piece>());
                     setBorderLightGray();
@@ -674,6 +727,7 @@ public class GameLogic implements ActionListener{
         }
 
     }
+
     void beleirTablaEsFelulIr(){//egesz tablat kiirja es mindig felulirja es ezt toltom vissza
         try {
             FileWriter myWriter = new FileWriter("filename.txt");
@@ -687,10 +741,53 @@ public class GameLogic implements ActionListener{
             }
 
             myWriter.close();
-            System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
+        }
+    }
+    void letrehozzNullasFajlt(){
+        try {
+            FileWriter myWriter = new FileWriter("0.txt");
+            mBoard.whiteTurn=true;
+            myWriter.write(mBoard.whiteTurn+ "\n");
+            for(int i=0;i<mBoard.table.size();++i) {
+                for (int j = 0; j < mBoard.table.get(i).size(); ++j) {
+                    if(mBoard.table.get(i).get(j).piece.getColor()!=null && mBoard.table.get(i).get(j).piece.getType()!=PIECETYPE.DEFAULT) {
+                        myWriter.write(mBoard.table.get(i).get(j).piece.getType().toString() + "," + "#" + Integer.toHexString(mBoard.table.get(i).get(j).piece.getColor().getRGB()).substring(2).toUpperCase() + "," + mBoard.table.get(i).get(j).piece.pos.x + "," + mBoard.table.get(i).get(j).piece.pos.y + "\n");
+                    }
+                }
+            }
+
+            myWriter.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+    void beleirTablat(int szam){//egesz tablat kiirja es mindig felulirja es ezt toltom vissza
+        try{
+            FileWriter myWriter = new FileWriter(szam+".txt");
+            myWriter.write(mBoard.whiteTurn+ "\n");
+            for(int i=0;i<mBoard.table.size();++i) {
+                for (int j = 0; j < mBoard.table.get(i).size(); ++j) {
+                    if(mBoard.table.get(i).get(j).piece.getColor()!=null && mBoard.table.get(i).get(j).piece.getType()!=PIECETYPE.DEFAULT) {
+                        myWriter.write(mBoard.table.get(i).get(j).piece.getType().toString() + "," + "#" + Integer.toHexString(mBoard.table.get(i).get(j).piece.getColor().getRGB()).substring(2).toUpperCase() + "," + mBoard.table.get(i).get(j).piece.pos.x + "," + mBoard.table.get(i).get(j).piece.pos.y + "\n");
+                    }
+                }
+            }
+            myWriter.close();
+        } catch(IOException e) {
+            System.out.println(" ");
+        }
+    }
+    void beleirFajlDb(int szam){
+        try{
+            FileWriter myWriter = new FileWriter("szam.txt");
+            myWriter.write(Integer.toString(szam));
+            myWriter.close();
+        } catch(IOException e) {
+            System.out.println(" ");
         }
     }
     Vector<String> visszaAdFajltartalom(){
@@ -705,10 +802,184 @@ public class GameLogic implements ActionListener{
             myReader.close();
         }
         catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
+            System.out.println(" ");
             e.printStackTrace();
         }
         return tartalom;
+    }
+    Vector<String> visszaAdFajltartalom(String szam){
+        Vector<String> tartalom=new Vector<>();
+        try {
+            File myObj = new File("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\"+szam+".txt");
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                tartalom.add(data);
+            }
+            myReader.close();
+        }
+        catch (FileNotFoundException e) {
+            System.out.println(" ");
+            e.printStackTrace();
+        }
+        return tartalom;
+    }
+    Vector<Vector<String>> visszaAdFajlokTartalmat() {
+        Vector<Vector<String>> fajlokTartalma=new Vector<Vector<String>>();
+        Vector<String> tartalom=new Vector<>();
+        try {
+            File myObj = new File("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\szam.txt");
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                tartalom.add(data);
+            }
+            myReader.close();
+        }
+        catch (FileNotFoundException e) {
+            System.out.println(" ");
+            e.printStackTrace();
+        }
+        Integer fajlDb=Integer.parseInt(tartalom.get(0));
+        for(Integer i = 0;i<=fajlDb;++i){
+            Vector<String> aktualisFajl=visszaAdFajltartalom(i+"");
+            fajlokTartalma.add(aktualisFajl);
+        }
+        return fajlokTartalma;
+    }
+    void torolLepesFajlokatEsNullazSzamokat(){
+        Vector<String> tartalom=new Vector<>();
+        try {
+            File myObj = new File("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\szam.txt");
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                tartalom.add(data);
+            }
+            myReader.close();
+        }
+        catch (FileNotFoundException e) {
+            System.out.println(" ");
+            e.printStackTrace();
+        }
+        Integer fajlDb=Integer.parseInt(tartalom.get(0));
+        for(int i = 0;i<=fajlDb;++i){
+            File myObj = new File(i +".txt");
+            myObj.delete();
+        }
+        beleirFajlDb(0);
+    }
+    Integer fajldarabVisszaAd(){
+        Vector<String> tartalom=new Vector<>();
+        try {
+            File myObj = new File("C:\\Users\\sabotamas0\\Documents\\repos\\ChessGame\\szam.txt");
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                tartalom.add(data);
+            }
+            myReader.close();
+        }
+        catch (FileNotFoundException e) {
+            System.out.println(" ");
+            e.printStackTrace();
+        }
+        return Integer.parseInt(tartalom.get(0));
+    }
+    void replayForward(int szam,JSlider s){
+        Vector<Vector<String>> fajlokTartalma = visszaAdFajlokTartalmat();
+        Vector<String> asd = fajlokTartalma.get(szam);
+        visszaToltFajlbolTablat(asd);
+
+    }
+    void visszaToltFajlbolTablat(Vector<String> fajltartalma){
+        mBoard.setPieces(new Vector<Piece>());
+        Vector<Piece> reloadedPieces=new Vector<>();
+        mBoard.whiteTurn= Boolean.parseBoolean(fajltartalma.get(0));
+        for(int i = 0;i<fajltartalma.size();++i){
+            String[] arrOfStr = fajltartalma.get(i).split(",");
+            for(int j = 0;j<=arrOfStr.length;++j){
+                switch (arrOfStr[0]) {
+                    case "PAWN" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Pawn pawn=new Pawn(Color.white);
+                            pawn.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(pawn);
+                        }
+                        else {
+                            Pawn pawn=new Pawn(Color.black);
+                            pawn.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(pawn);
+                        }
+                    }
+                    case "ROOK" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Rook rook=new Rook(Color.white);
+                            rook.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(rook);
+                        }
+                        else {
+                            Rook rook=new Rook(Color.black);
+                            rook.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(rook);
+                        }
+                    }
+                    case "KNIGHT" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Knight knight=new Knight(Color.white);
+                            knight.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(knight);
+                        }
+                        else {
+                            Knight knight=new Knight(Color.black);
+                            knight.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(knight);
+                        }
+                    }
+                    case "BISHOP" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Bishop bishop = new Bishop(Color.white);
+                            bishop.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(bishop);
+                        }
+                        else {
+                            Bishop bishop = new Bishop(Color.black);
+                            bishop.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(bishop);
+                        }
+                    }
+                    case "QUEEN" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            Queen queen = new Queen(Color.white);
+                            queen.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(queen);
+                        }
+                        else {
+                            Queen queen = new Queen(Color.black);
+                            queen.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(queen);
+                        }
+                    }
+                    case "KING" -> {
+                        if (arrOfStr[1].equals("#FFFFFF")) {
+                            King king = new King(Color.white);
+                            king.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(king);
+                        }
+                        else {
+                            King king = new King(Color.black);
+                            king.pos = new Position(Integer.parseInt(arrOfStr[2]), Integer.parseInt(arrOfStr[3]));
+                            reloadedPieces.add(king);
+                        }
+                    }
+                }
+            }
+        }
+        for(int i=0;i<reloadedPieces.size();++i){
+            Position p =reloadedPieces.get(i).pos;
+            mBoard.table.get(p.y).get(p.x).piece=reloadedPieces.get(i);
+            mBoard.table.get(p.y).get(p.x).button.setIcon(mBoard.table.get(p.y).get(p.x).piece.picture);
+        }
     }
     void visszaToltFajlbolTablat(){
         mBoard.setPieces(new Vector<Piece>());
@@ -716,9 +987,8 @@ public class GameLogic implements ActionListener{
         Vector<Piece> reloadedPieces=new Vector<>();
         mBoard.whiteTurn= Boolean.parseBoolean(fajltartalma.get(0));
         for(int i = 1;i<fajltartalma.size();++i){
-
             String[] arrOfStr = fajltartalma.get(i).split(",");
-            for(int j = 0;j<arrOfStr.length;++j){
+            for(int j = 0;j<=arrOfStr.length;++j){
                 switch (arrOfStr[0]) {
                     case "PAWN" -> {
                         if (arrOfStr[1].equals("#FFFFFF")) {
