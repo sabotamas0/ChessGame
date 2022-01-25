@@ -16,6 +16,7 @@ public class Board extends JFrame{
     JButton reset = new JButton();
     JButton visszaTolt = new JButton();
     JButton replayStep = new JButton();
+    JButton continueHere=new JButton();
     public boolean whiteTurn;
     public Board(){
 
@@ -68,6 +69,7 @@ public class Board extends JFrame{
         submenu=new JMenu("Reset Game");
         submenu2=new JMenu("Reload From File");
         submenu3=new JMenu("Replay Steps With Slider");
+
         reset.setText("Reset");
         submenu.add(reset);
         visszaTolt.setText("Reload");

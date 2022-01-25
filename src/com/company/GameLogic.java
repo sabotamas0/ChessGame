@@ -23,8 +23,8 @@ import com.company.PIECETYPE;
 public class GameLogic implements ActionListener{
     Board mBoard;
     JPanel p;
+    JPanel p2;
     JFrame f=new JFrame();
-    boolean flag;
     int szam=fajldarabVisszaAd();
     enum GLOBALSTATE{CHECK,STALEMATE,DEFAULT,CHECKMATE,INVALIDSTEP};
     //int prevPosX=-1;
@@ -462,23 +462,38 @@ public class GameLogic implements ActionListener{
     //BISHOP,KNIGHT,ROOK,KING,QUEEN
     public JSlider letrehozzSlider(int szam){
         JSlider slider = new JSlider(JSlider.HORIZONTAL);
+        mBoard.continueHere.setText("Continue here");
         slider.setMinorTickSpacing(1);
         slider.setMaximum(szam);
         slider.setPaintTicks(true);
         f=new JFrame();
         p=new JPanel();
+        p2=new JPanel();
         p.add(slider);
+        p2.add(mBoard.continueHere);
         f.add(p);
+        f.add(p2);
         f.setVisible(true);
-        f.setContentPane(p);
+
+        f.setLayout(new GridLayout(2, 1));
         f.setSize(500,150);
         return slider;
+    }
+    public void folytatInnen(int s){
+        Integer fajldarabok=fajldarabVisszaAd();
+        int toroltFajlok=0;
+        for(int i = s+1;i<=fajldarabok;++i){
+            File myObj = new File(i +".txt");
+            myObj.delete();
+            ++toroltFajlok;
+        }
+        beleirFajlDb(fajldarabVisszaAd()-toroltFajlok);
+        szam=fajldarabVisszaAd();
     }
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource().equals(mBoard.visszaTolt)){
             visszaToltFajlbolTablat();
-            flag=true;
         }
         if(e.getSource().equals(mBoard.replayStep)){
             JSlider slider =letrehozzSlider(fajldarabVisszaAd());
@@ -486,8 +501,9 @@ public class GameLogic implements ActionListener{
             if(fajldarabVisszaAd()!=0) {
                 slider.addChangeListener(e1 -> {
                     slider.setMaximum(fajldarabVisszaAd());
-                    slider.repaint();
                     replayForward(slider.getValue(),slider);
+                    mBoard.continueHere.addActionListener(e2 -> folytatInnen(slider.getValue()));
+                    slider.repaint();
                 });
             }
             else{
@@ -502,6 +518,7 @@ public class GameLogic implements ActionListener{
             torolLepesFajlokatEsNullazSzamokat();
             letrehozzNullasFajlt();
         }
+
         setBorderLightGray();
         previousTableState=mBoard.getPieces();
         boolean stepped=false;
@@ -678,12 +695,14 @@ public class GameLogic implements ActionListener{
             switch (state){
                 case CHECK -> JOptionPane.showMessageDialog(mBoard.panel,"Sakk");
                 case CHECKMATE -> {
-
-                    JOptionPane.showMessageDialog(mBoard.panel, "SakkMatt");
-                    mBoard.setPieces(new Vector<Piece>());
-                    setBorderLightGray();
-                    stepped=false;
-                    createDefaultGame();
+                    int a=JOptionPane.showConfirmDialog(mBoard.panel, "SakkMatt, szeretned folytatni a jatekot, vagy ujra szeretned kezdeni?");
+                    if (a == JOptionPane.NO_OPTION)
+                    {
+                        mBoard.setPieces(new Vector<Piece>());
+                        setBorderLightGray();
+                        stepped=false;
+                        createDefaultGame();
+                    }
                 }
                 case STALEMATE -> {
                     JOptionPane.showMessageDialog(mBoard.panel, "Dontetlen");
